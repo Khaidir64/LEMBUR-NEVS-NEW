@@ -18,69 +18,107 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 12px; display: flex; flex-direction: column; align-items: center; }
 
         .container { width: 100%; max-width: 1200px; }
 
-        /* Navigasi */
-        .nav-mode { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
+        /* Navigasi - Mobile Friendly (Lebih Besar di HP) */
+        .nav-mode { display: flex; justify-content: center; gap: 8px; margin-bottom: 18px; width: 100%; }
 
-        .btn-mode { padding: 8px 16px; border: 1px solid var(--border-color); background: #fff; cursor: pointer; border-radius: 20px; font-weight: 600; color: #64748b; transition: all 0.2s; }
+        .btn-mode { flex: 1; max-width: 200px; padding: 12px 16px; border: 1px solid var(--border-color); background: #fff; cursor: pointer; border-radius: 12px; font-size: 14px; font-weight: 700; color: #64748b; transition: all 0.2s; text-align: center; -webkit-tap-highlight-color: transparent; }
 
-        .btn-mode.active-user { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .btn-mode.active-user { background: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); }
 
-        .btn-mode.active-admin { background: var(--admin-color); color: white; border-color: var(--admin-color); }
+        .btn-mode.active-admin { background: var(--admin-color); color: white; border-color: var(--admin-color); box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.2); }
 
         /* Header Area dengan Logo */
-        header { background: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; text-align: center; }
+        header { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color); display: flex; flex-direction: column-reverse; align-items: center; justify-content: center; gap: 12px; text-align: center; }
 
-        @media (min-width: 600px) { header { flex-direction: row; text-align: left; justify-content: space-between; padding: 20px 35px; } }
+        @media (min-width: 600px) { 
+            body { padding: 20px; }
+            header { flex-direction: row; text-align: left; justify-content: space-between; padding: 20px 30px; } 
+            .nav-mode { gap: 10px; margin-bottom: 25px; }
+            .btn-mode { padding: 10px 20px; border-radius: 20px; font-size: 14px; }
+        }
 
-        .header-text h1 { color: var(--primary-color); font-size: 26px; margin-bottom: 5px; }
+        .header-text h1 { color: var(--primary-color); font-size: 20px; margin-bottom: 4px; line-height: 1.3; }
 
         .admin-mode .header-text h1 { color: var(--admin-color); }
 
-        .header-text p { color: #64748b; font-size: 14px; }
+        .header-text p { color: #64748b; font-size: 13px; }
 
-        .brand-logo { max-height: 65px; max-width: 180px; object-fit: contain; }
+        .brand-logo { max-height: 55px; max-width: 150px; object-fit: contain; }
+
+        @media (min-width: 600px) {
+            .header-text h1 { font-size: 24px; }
+            .header-text p { font-size: 14px; }
+            .brand-logo { max-height: 65px; max-width: 180px; }
+        }
 
         /* Filter Section Admin & Karyawan */
-        .admin-controls, .user-controls { display: flex; gap: 10px; margin-bottom: 20px; background: #f1f5f9; padding: 15px; border-radius: 8px; flex-wrap: wrap; align-items: center; }
-        .admin-controls select, .user-controls input { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); outline: none; font-size: 14px; }
-        .user-controls input { min-width: 250px; flex: 1; max-width: 400px; }
+        .admin-controls, .user-controls { display: flex; gap: 10px; margin-bottom: 15px; background: #f1f5f9; padding: 12px; border-radius: 8px; flex-wrap: wrap; align-items: center; width: 100%; }
+        .admin-controls select, .user-controls input { padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); outline: none; font-size: 14px; width: 100%; }
+        
+        @media (min-width: 600px) {
+            .admin-controls select { width: auto; min-width: 150px; }
+            .user-controls input { max-width: 350px; }
+            .admin-controls, .user-controls { padding: 15px; margin-bottom: 20px; }
+        }
 
         /* Layouts & Cards */
         .view-section { display: none; }
-        .view-section.active { display: grid; gap: 25px; }
-        .user-grid { grid-template-columns: 1fr; justify-content: center; max-width: 750px; margin: 0 auto; }
-        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid var(--border-color); }
-        .card h2 { font-size: 18px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid var(--border-color); }
+        .view-section.active { display: grid; gap: 20px; }
+        .user-grid { grid-template-columns: 1fr; justify-content: center; max-width: 100%; margin: 0 auto; }
+        
+        @media (min-width: 768px) { .user-grid { max-width: 750px; } }
+        
+        .card { background: var(--card-bg); padding: 16px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border: 1px solid var(--border-color); width: 100%; }
+        
+        @media (min-width: 600px) { .card { padding: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); } }
+        
+        .card h2 { font-size: 16px; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid var(--border-color); }
+        
+        @media (min-width: 600px) { .card h2 { font-size: 18px; margin-bottom: 15px; padding-bottom: 8px; } }
 
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #475569; }
-        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; }
-        .form-group textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #475569; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; -webkit-appearance: none; }
+        .form-group textarea { resize: vertical; min-height: 70px; font-family: inherit; }
 
-        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary-color); }
-        .admin-mode .form-group input:focus, .admin-mode .form-group textarea:focus { border-color: var(--admin-color); }
+        @media (min-width: 600px) {
+            .form-group { margin-bottom: 15px; }
+            .form-group label { font-size: 14px; margin-bottom: 6px; }
+            .form-group textarea { min-height: 80px; }
+        }
 
-        button.btn-submit { width: 100%; padding: 11px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .admin-mode .form-group input:focus, .admin-mode .form-group textarea:focus { border-color: var(--admin-color); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
+
+        button.btn-submit { width: 100%; padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         button.btn-submit:hover { background-color: var(--primary-hover); }
 
-        .btn-export { background-color: #16a34a; padding: 8px 16px; font-size: 14px; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-export { width: 100%; background-color: #16a34a; padding: 10px 16px; font-size: 14px; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; }
         .btn-export:hover { background-color: #15803d; }
-
-        /* Tables */
-        .table-container { overflow-x: auto; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
-        td.keterangan-cell { white-space: normal; min-width: 220px; max-width: 350px; word-wrap: break-word; }
-        th { background-color: #f1f5f9; color: #475569; }
         
-        .btn-delete { background-color: #ef4444; padding: 5px 10px; font-size: 12px; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        @media (min-width: 600px) { .btn-export { width: auto; padding: 8px 16px; } }
+
+        /* Tables - Anti Berantakan di Layar HP */
+        .table-container { overflow-x: auto; margin-top: 10px; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+        
+        @media (min-width: 600px) { 
+            table { font-size: 14px; } 
+            th, td { padding: 12px 15px; }
+        }
+        
+        td.keterangan-cell { white-space: normal; min-width: 180px; max-width: 300px; word-wrap: break-word; }
+        th { background-color: #f1f5f9; color: #475569; font-weight: 600; }
+        
+        .btn-delete { background-color: #ef4444; padding: 6px 12px; font-size: 12px; color: white; border: none; border-radius: 4px; cursor: pointer; }
         .btn-delete:hover { background-color: #dc2626; }
 
-        .no-data { text-align: center; color: #94a3b8; padding: 30px; font-style: italic; }
+        .no-data { text-align: center; color: #94a3b8; padding: 20px; font-style: italic; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -133,7 +171,7 @@
 
         <div class="card">
             <h2>Cek Riwayat Lembur Mandiri</h2>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Ketik nama Anda untuk melihat riwayat lembur pribadi yang sudah terdata di sistem.</p>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Ketik nama Anda untuk melihat riwayat lembur pribadi Anda.</p>
             
             <div class="user-controls">
                 <input type="text" id="searchNamaKaryawan" oninput="tampilkanRiwayatKaryawan()" placeholder="Masukkan Nama Anda...">
@@ -161,13 +199,13 @@
 
     <div id="adminSection" class="view-section admin-grid">
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 12px;">
                 <h2>Panel Rekap Lembur (Filter Bulanan)</h2>
                 <button class="btn-export" onclick="exportToCSV()">Unduh Hasil Filter (Excel)</button>
             </div>
 
             <div class="admin-controls">
-                <span style="font-weight: 600; font-size: 14px;">Filter Tampilan:</span>
+                <span style="font-weight: 600; font-size: 14px; width: 100%; display: block; margin-bottom: 2px; text-align: left;">Filter Tampilan:</span>
                 <select id="filterBulan" onchange="tampilkanDataAdmin()">
                     <option value="all">Semua Bulan</option>
                     <option value="0">Januari</option>
@@ -210,11 +248,9 @@
 </div>
 
 <script>
-    // Database lokal browser
     let dataLembur = JSON.parse(localStorage.getItem('dataLembur')) || [];
     const PASSWORD_ADMIN = "Galaxy88"; 
 
-    // Generate pilihan tahun otomatis
     const filterTahun = document.getElementById('filterTahun');
     const tahunSekarang = new Date().getFullYear();
     for(let i = tahunSekarang; i >= tahunSekarang - 2; i--) {
@@ -223,10 +259,7 @@
         filterTahun.appendChild(opt);
     }
 
-    // Set default tanggal input hari ini
     document.getElementById('tanggal').valueAsDate = new Date();
-
-    // Tampilkan riwayat kosong di awal halaman user
     tampilkanRiwayatKaryawan();
 
     function switchMode(mode) {
@@ -249,6 +282,7 @@
                 mainTitle.innerText = "Panel Kontrol Admin";
                 subTitle.innerText = "Manajemen data, hapus catatan, dan ekspor laporan bulanan";
                 tampilkanDataAdmin();
+                window.scrollTo({top: 0, behavior: 'smooth'});
             } else if (pin !== null) { 
                 alert("Password Salah! Akses ditolak."); 
             }
@@ -262,6 +296,7 @@
             subTitle.innerText = "Silakan masukkan data jam masuk dan pulang lembur Anda";
             document.getElementById('searchNamaKaryawan').value = '';
             tampilkanRiwayatKaryawan();
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
     }
 
@@ -281,7 +316,6 @@
         return new Date(stringTanggal).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
     }
 
-    // Submit form input lembur
     document.getElementById('overtimeForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -300,12 +334,10 @@
         this.reset();
         document.getElementById('tanggal').valueAsDate = new Date();
         
-        // Reset pencarian riwayat setelah input
         document.getElementById('searchNamaKaryawan').value = '';
         tampilkanRiwayatKaryawan();
     });
 
-    // FUNGSI BARU: Render tabel riwayat khusus karyawan mandiri
     function tampilkanRiwayatKaryawan() {
         const keyword = document.getElementById('searchNamaKaryawan').value.trim().toLowerCase();
         const userTableBody = document.getElementById('userTableBody');
@@ -319,7 +351,6 @@
             return;
         }
 
-        // Cari data yang namanya mengandung kata kunci pencarian
         const riwayatKaryawan = dataLembur.filter(item => item.nama.toLowerCase().includes(keyword));
 
         if (riwayatKaryawan.length === 0) {
@@ -329,8 +360,6 @@
         }
 
         userNoDataMessage.style.display = 'none';
-
-        // Tampilkan riwayat (Diurutkan dari tanggal terbaru)
         const sortedRiwayat = [...riwayatKaryawan].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
 
         sortedRiwayat.forEach((item, index) => {
