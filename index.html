@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Lembur Karyawan - Nevs</title>
     <style>
         :root {
@@ -16,111 +16,64 @@
             --border-color: #e2e8f0;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 
-        /* Dioptimalkan: Padding body diperkecil di HP agar layar terasa luas */
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 8px; display: flex; flex-direction: column; align-items: center; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 10px; display: flex; flex-direction: column; align-items: center; }
 
-        .container { width: 100%; max-width: 1200px; }
+        .container { width: 100%; max-width: 800px; }
 
-        /* Navigasi - Dioptimalkan untuk kenyamanan jempol di HP */
-        .nav-mode { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; width: 100%; }
+        /* Navigasi Utama - Paksa 2 Kolom Seimbang di HP */
+        .nav-mode { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 15px; width: 100%; }
+        .btn-mode { flex: 1; padding: 14px 10px; border: 1px solid var(--border-color); background: #fff; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: bold; color: #64748b; text-align: center; -webkit-tap-highlight-color: transparent; }
+        .btn-mode.active-user { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .btn-mode.active-admin { background: var(--admin-color); color: white; border-color: var(--admin-color); }
 
-        .btn-mode { flex: 1; max-width: 50%; padding: 14px 10px; border: 1px solid var(--border-color); background: #fff; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 700; color: #64748b; transition: all 0.2s; text-align: center; -webkit-tap-highlight-color: transparent; }
-
-        .btn-mode.active-user { background: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); }
-
-        .btn-mode.active-admin { background: var(--admin-color); color: white; border-color: var(--admin-color); box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.2); }
-
-        /* Header Area dengan Logo - Responsif fleksibel */
-        header { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); display: flex; flex-direction: column-reverse; align-items: center; justify-content: center; gap: 12px; text-align: center; }
-
-        @media (min-width: 600px) { 
-            body { padding: 20px; }
-            header { flex-direction: row; text-align: left; justify-content: space-between; padding: 20px 30px; margin-bottom: 20px; } 
-            .nav-mode { gap: 10px; margin-bottom: 25px; }
-            .btn-mode { padding: 12px 20px; border-radius: 20px; font-size: 14px; max-width: 200px; }
-        }
-
-        .header-text h1 { color: var(--primary-color); font-size: 18px; margin-bottom: 4px; line-height: 1.3; font-weight: 700; }
+        /* Header Area */
+        header { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); display: flex; flex-direction: column-reverse; align-items: center; gap: 10px; text-align: center; }
+        .header-text h1 { color: var(--primary-color); font-size: 18px; margin-bottom: 4px; font-weight: 700; }
         .admin-mode .header-text h1 { color: var(--admin-color); }
         .header-text p { color: #64748b; font-size: 12px; }
-
         .brand-logo { max-height: 50px; max-width: 140px; object-fit: contain; }
 
         @media (min-width: 600px) {
-            .header-text h1 { font-size: 24px; }
-            .header-text p { font-size: 14px; }
-            .brand-logo { max-height: 65px; max-width: 180px; }
+            header { flex-direction: row; text-align: left; justify-content: space-between; padding: 20px; }
+            .header-text h1 { font-size: 22px; }
+            .brand-logo { max-height: 60px; max-width: 160px; }
         }
 
-        /* Filter Section Admin & Karyawan */
-        .admin-controls, .user-controls { display: flex; gap: 10px; margin-bottom: 15px; background: #f1f5f9; padding: 10px; border-radius: 8px; flex-wrap: wrap; align-items: center; width: 100%; }
-        .admin-controls select, .user-controls input { padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); outline: none; font-size: 14px; width: 100%; background: #fff; }
+        /* Filter & Kontrol */
+        .admin-controls, .user-controls { display: flex; gap: 8px; margin-bottom: 12px; background: #f1f5f9; padding: 10px; border-radius: 8px; flex-wrap: wrap; width: 100%; }
+        .admin-controls select, .user-controls input { padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 14px; width: 100%; background: #fff; }
         
         @media (min-width: 600px) {
-            .admin-controls select { width: auto; min-width: 150px; }
-            .user-controls input { max-width: 350px; }
-            .admin-controls, .user-controls { padding: 15px; margin-bottom: 20px; }
+            .admin-controls select { width: auto; min-width: 140px; }
+            .user-controls input { max-width: 300px; }
         }
 
-        /* Layouts & Cards */
+        /* Tampilan Section */
         .view-section { display: none; }
-        .view-section.active { display: grid; gap: 15px; }
-        .user-grid { grid-template-columns: 1fr; justify-content: center; max-width: 100%; margin: 0 auto; }
-        
-        @media (min-width: 768px) { .user-grid { max-width: 750px; } }
-        
-        /* Padding card dioptimalkan agar ramah layar sempit */
-        .card { background: var(--card-bg); padding: 14px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border: 1px solid var(--border-color); width: 100%; }
-        
-        @media (min-width: 600px) { .card { padding: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); } }
-        
+        .view-section.active { display: block; }
+        .card { background: var(--card-bg); padding: 14px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; margin-bottom: 15px; }
         .card h2 { font-size: 15px; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid var(--border-color); }
-        
-        @media (min-width: 600px) { .card h2 { font-size: 18px; margin-bottom: 15px; padding-bottom: 8px; } }
 
-        .form-group { margin-bottom: 12px; }
+        /* Form */
+        .form-group { margin-bottom: 12px; text-align: left; }
         .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
-        
-        /* Tinggi input ditambah sedikit agar teks bawaan keyboard HP tidak terpotong */
-        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; -webkit-appearance: none; background: #fff; }
-        .form-group textarea { resize: vertical; min-height: 75px; font-family: inherit; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; background: #fff; -webkit-appearance: none; }
+        .form-group textarea { resize: vertical; min-height: 70px; font-family: inherit; }
+        button.btn-submit { width: 100%; padding: 14px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; }
 
-        @media (min-width: 600px) {
-            .form-group { margin-bottom: 15px; }
-            .form-group label { font-size: 14px; margin-bottom: 6px; }
-            .form-group textarea { min-height: 80px; }
-        }
-
-        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        .admin-mode .form-group input:focus, .admin-mode .form-group textarea:focus { border-color: var(--admin-color); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
-
-        button.btn-submit { width: 100%; padding: 14px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        button.btn-submit:hover { background-color: var(--primary-hover); }
-
-        .btn-export { width: 100%; background-color: #16a34a; padding: 12px 16px; font-size: 14px; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; }
-        .btn-export:hover { background-color: #15803d; }
-        
-        @media (min-width: 600px) { .btn-export { width: auto; padding: 8px 16px; } }
-
-        /* Tables - Proteksi agar tidak merusak struktur halaman di HP */
-        .table-container { overflow-x: auto; margin-top: 10px; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; -webkit-overflow-scrolling: touch; }
+        /* Tabel Responsif (Bisa Di-geser Kanan Kiri di HP) */
+        .table-container { overflow-x: auto; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; -webkit-overflow-scrolling: touch; background: #fff; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
         th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
-        
-        @media (min-width: 600px) { 
-            table { font-size: 14px; } 
-            th, td { padding: 12px 15px; }
-        }
-        
-        td.keterangan-cell { white-space: normal; min-width: 160px; max-width: 250px; word-wrap: break-word; }
+        td.keterangan-cell { white-space: normal; min-width: 150px; max-width: 250px; word-wrap: break-word; }
         th { background-color: #f1f5f9; color: #475569; font-weight: 600; }
         
         .btn-delete { background-color: #ef4444; padding: 6px 12px; font-size: 12px; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-delete:hover { background-color: #dc2626; }
-
-        .no-data { text-align: center; color: #94a3b8; padding: 20px; font-style: italic; font-size: 13px; }
+        .btn-export { width: 100%; background-color: #16a34a; padding: 12px; font-size: 14px; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; margin-bottom: 10px; }
+        @media (min-width: 600px) { .btn-export { width: auto; padding: 8px 16px; margin-bottom: 0; } }
+        .no-data { text-align: center; color: #94a3b8; padding: 15px; font-style: italic; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -139,7 +92,7 @@
         <img class="brand-logo" id="companyLogo" src="LOGO.png" alt="Logo Perusahaan" onerror="this.style.display='none'">
     </header>
 
-    <div id="userSection" class="view-section user-grid active">
+    <div id="userSection" class="view-section active">
         <div class="card">
             <h2>Form Input Lembur</h2>
             <form id="overtimeForm">
@@ -164,8 +117,8 @@
                     <input type="time" id="jamPulang" required>
                 </div>
                 <div class="form-group">
-                    <label status="keterangan">Keterangan Lembur / Tugas</label>
-                    <textarea id="keterangan" placeholder="Contoh: Menyelesaikan cetak jersey atau maintenance mesin" required></textarea>
+                    <label for="keterangan">Keterangan Lembur / Tugas</label>
+                    <textarea id="keterangan" placeholder="Contoh: Menyelesaikan cetak jersey atau maintenance" required></textarea>
                 </div>
                 <button type="submit" class="btn-submit">Kirim Data Lembur</button>
             </form>
@@ -173,12 +126,10 @@
 
         <div class="card">
             <h2>Cek Riwayat Lembur Mandiri</h2>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Ketik nama Anda untuk melihat riwayat lembur pribadi Anda.</p>
-            
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">Ketik nama Anda untuk melihat riwayat lembur pribadi.</p>
             <div class="user-controls">
                 <input type="text" id="searchNamaKaryawan" oninput="tampilkanRiwayatKaryawan()" placeholder="Masukkan Nama Anda...">
             </div>
-
             <div class="table-container">
                 <table>
                     <thead>
@@ -186,10 +137,10 @@
                             <th>No</th>
                             <th>Tanggal</th>
                             <th>Pekerjaan</th>
-                            <th>Jam Masuk</th>
-                            <th>Jam Pulang</th>
-                            <th>Total Durasi</th>
-                            <th>Keterangan Tugas</th>
+                            <th>Masuk</th>
+                            <th>Pulang</th>
+                            <th>Durasi</th>
+                            <th>Tugas</th>
                         </tr>
                     </thead>
                     <tbody id="userTableBody"></tbody>
@@ -199,15 +150,13 @@
         </div>
     </div>
 
-    <div id="adminSection" class="view-section admin-grid">
+    <div id="adminSection" class="view-section">
         <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 12px;">
-                <h2>Panel Rekap Lembur (Filter Bulanan)</h2>
-                <button class="btn-export" onclick="exportToCSV()">Unduh Hasil Filter (Excel)</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <h2>Panel Rekap Lembur</h2>
+                <button class="btn-export" onclick="exportToCSV()">Unduh Excel (CSV)</button>
             </div>
-
             <div class="admin-controls">
-                <span style="font-weight: 600; font-size: 14px; width: 100%; display: block; margin-bottom: 2px; text-align: left;">Filter Tampilan:</span>
                 <select id="filterBulan" onchange="tampilkanDataAdmin()">
                     <option value="all">Semua Bulan</option>
                     <option value="0">Januari</option>
@@ -225,7 +174,6 @@
                 </select>
                 <select id="filterTahun" onchange="tampilkanDataAdmin()"></select>
             </div>
-            
             <div class="table-container">
                 <table>
                     <thead>
@@ -234,16 +182,16 @@
                             <th>Nama</th>
                             <th>Pekerjaan</th>
                             <th>Tanggal</th>
-                            <th>Jam Masuk</th>
-                            <th>Jam Pulang</th>
-                            <th>Total Durasi</th>
-                            <th>Keterangan Tugas</th>
+                            <th>Masuk</th>
+                            <th>Pulang</th>
+                            <th>Durasi</th>
+                            <th>Tugas</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody"></tbody>
                 </table>
-                <div id="noDataMessage" class="no-data">Tidak ada data lembur yang cocok dengan filter ini.</div>
+                <div id="noDataMessage" class="no-data">Tidak ada data lembur.</div>
             </div>
         </div>
     </div>
@@ -262,7 +210,6 @@
     }
 
     document.getElementById('tanggal').valueAsDate = new Date();
-    tampilkanRiwayatKaryawan();
 
     function switchMode(mode) {
         const container = document.getElementById('mainContainer');
@@ -282,11 +229,10 @@
                 userSection.classList.remove('active');
                 adminSection.classList.add('active');
                 mainTitle.innerText = "Panel Kontrol Admin";
-                subTitle.innerText = "Manajemen data, hapus catatan, dan ekspor laporan bulanan";
+                subTitle.innerText = "Manajemen data dan ekspor laporan bulanan";
                 tampilkanDataAdmin();
-                window.scrollTo({top: 0, behavior: 'smooth'});
             } else if (pin !== null) { 
-                alert("Password Salah! Akses ditolak."); 
+                alert("Password Salah!"); 
             }
         } else {
             container.classList.remove('admin-mode');
@@ -298,29 +244,25 @@
             subTitle.innerText = "Silakan masukkan data jam masuk dan pulang lembur Anda";
             document.getElementById('searchNamaKaryawan').value = '';
             tampilkanRiwayatKaryawan();
-            window.scrollTo({top: 0, behavior: 'smooth'});
         }
     }
 
     function hitungDurasi(masuk, pulang) {
         let [jamM, minM] = masuk.split(':').map(Number);
         let [jamP, minP] = pulang.split(':').map(Number);
-        let totalMenitMasuk = (jamM * 60) + minM;
-        let totalMenitPulang = (jamP * 60) + minP;
-
-        if (totalMenitPulang < totalMenitMasuk) { totalMenitPulang += 24 * 60; }
-
-        let selisihMenit = totalMenitPulang - totalMenitMasuk;
-        return `${Math.floor(selisihMenit / 60)} Jam ${selisihMenit % 60} Menit`;
+        let totalM = (jamM * 60) + minM;
+        let totalP = (jamP * 60) + minP;
+        if (totalP < totalM) { totalP += 24 * 60; }
+        let selisih = totalP - totalM;
+        return `${Math.floor(selisih / 60)} Jam ${selisih % 60} Menit`;
     }
 
-    function formatTanggal(stringTanggal) {
-        return new Date(stringTanggal).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
+    function formatTanggal(str) {
+        return new Date(str).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
     }
 
     document.getElementById('overtimeForm').addEventListener('submit', function(e) {
         e.preventDefault();
-
         const nama = document.getElementById('nama').value;
         const pekerjaan = document.getElementById('pekerjaan').value;
         const tanggal = document.getElementById('tanggal').value;
@@ -332,97 +274,64 @@
         dataLembur.push({ nama, pekerjaan, tanggal, jamMasuk, jamPulang, keterangan, durasi });
         localStorage.setItem('dataLembur', JSON.stringify(dataLembur));
 
-        alert("Data lembur Anda berhasil dikirim ke Admin!");
+        alert("Data lembur berhasil dikirim!");
         this.reset();
         document.getElementById('tanggal').valueAsDate = new Date();
-        
-        document.getElementById('searchNamaKaryawan').value = '';
         tampilkanRiwayatKaryawan();
     });
 
     function tampilkanRiwayatKaryawan() {
         const keyword = document.getElementById('searchNamaKaryawan').value.trim().toLowerCase();
-        const userTableBody = document.getElementById('userTableBody');
-        const userNoDataMessage = document.getElementById('userNoDataMessage');
-        
-        userTableBody.innerHTML = '';
+        const tbody = document.getElementById('userTableBody');
+        const msg = document.getElementById('userNoDataMessage');
+        tbody.innerHTML = '';
 
         if (keyword === '') {
-            userNoDataMessage.innerText = "Silakan ketik nama Anda untuk memunculkan riwayat.";
-            userNoDataMessage.style.display = 'block';
+            msg.innerText = "Silakan ketik nama Anda untuk memunculkan riwayat.";
+            msg.style.display = 'block';
             return;
         }
 
-        const riwayatKaryawan = dataLembur.filter(item => item.nama.toLowerCase().includes(keyword));
-
-        if (riwayatKaryawan.length === 0) {
-            userNoDataMessage.innerText = `Tidak ada data lembur atas nama "${document.getElementById('searchNamaKaryawan').value}"`;
-            userNoDataMessage.style.display = 'block';
+        const filtered = dataLembur.filter(item => item.nama.toLowerCase().includes(keyword));
+        if (filtered.length === 0) {
+            msg.innerText = `Tidak ada data untuk "${keyword}"`;
+            msg.style.display = 'block';
             return;
         }
 
-        userNoDataMessage.style.display = 'none';
-        const sortedRiwayat = [...riwayatKaryawan].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-
-        sortedRiwayat.forEach((item, index) => {
+        msg.style.display = 'none';
+        filtered.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).forEach((item, index) => {
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${formatTanggal(item.tanggal)}</td>
-                <td>${item.pekerjaan}</td>
-                <td>${item.jamMasuk}</td>
-                <td>${item.jamPulang}</td>
-                <td><strong>${item.durasi}</strong></td>
-                <td class="keterangan-cell">${item.keterangan || '-'}</td>
-            `;
-            userTableBody.appendChild(row);
-        });
-    }
-
-    function getFilteredData() {
-        const bln = document.getElementById('filterBulan').value;
-        const thn = document.getElementById('filterTahun').value;
-
-        return dataLembur.filter(item => {
-            const d = new Date(item.tanggal);
-            const matchBulan = (bln === 'all' || d.getMonth() == bln);
-            const matchTahun = (d.getFullYear() == thn);
-            return matchBulan && matchTahun;
+            row.innerHTML = `<td>${index+1}</td><td>${formatTanggal(item.tanggal)}</td><td>${item.pekerjaan}</td><td>${item.jamMasuk}</td><td>${item.jamPulang}</td><td><b>${item.durasi}</b></td><td class="keterangan-cell">${item.keterangan || '-'}</td>`;
+            tbody.appendChild(row);
         });
     }
 
     function tampilkanDataAdmin() {
-        const tableBody = document.getElementById('tableBody');
-        const noDataMessage = document.getElementById('noDataMessage');
-        const filtered = getFilteredData();
+        const tbody = document.getElementById('tableBody');
+        const msg = document.getElementById('noDataMessage');
+        const bln = document.getElementById('filterBulan').value;
+        const thn = document.getElementById('filterTahun').value;
         
-        tableBody.innerHTML = '';
-        if (filtered.length === 0) {
-            noDataMessage.style.display = 'block';
-            return;
-        }
-        noDataMessage.style.display = 'none';
+        tbody.innerHTML = '';
+        const filtered = dataLembur.filter(item => {
+            const d = new Date(item.tanggal);
+            return (bln === 'all' || d.getMonth() == bln) && d.getFullYear() == thn;
+        });
+
+        if (filtered.length === 0) { msg.style.display = 'block'; return; }
+        msg.style.display = 'none';
 
         filtered.forEach((item, index) => {
-            const originalIndex = dataLembur.indexOf(item);
+            const origIdx = dataLembur.indexOf(item);
             const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td><strong>${item.nama}</strong></td>
-                <td>${item.pekerjaan}</td>
-                <td>${formatTanggal(item.tanggal)}</td>
-                <td>${item.jamMasuk}</td>
-                <td>${item.jamPulang}</td>
-                <td><strong>${item.durasi}</strong></td>
-                <td class="keterangan-cell">${item.keterangan || '-'}</td>
-                <td><button class="btn-delete" onclick="hapusData(${originalIndex})">Hapus</button></td>
-            `;
-            tableBody.appendChild(row);
+            row.innerHTML = `<td>${index+1}</td><td><b>${item.nama}</b></td><td>${item.pekerjaan}</td><td>${formatTanggal(item.tanggal)}</td><td>${item.jamMasuk}</td><td>${item.jamPulang}</td><td><b>${item.durasi}</b></td><td class="keterangan-cell">${item.keterangan || '-'}</td><td><button class="btn-delete" onclick="hapusData(${origIdx})">Hapus</button></td>`;
+            tbody.appendChild(row);
         });
     }
 
     function hapusData(index) {
-        if(confirm("Hapus data lembur ini secara permanen?")) {
+        if(confirm("Hapus data secara permanen?")) {
             dataLembur.splice(index, 1);
             localStorage.setItem('dataLembur', JSON.stringify(dataLembur));
             tampilkanDataAdmin();
@@ -430,25 +339,24 @@
     }
 
     function exportToCSV() {
-        const filtered = getFilteredData();
-        if (filtered.length === 0) { alert("Tidak ada data untuk diekspor!"); return; }
-
-        let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
-        csvContent += "No,Nama Karyawan,Pekerjaan,Tanggal,Jam Masuk,Jam Pulang,Total Durasi,Keterangan Lembur\n";
-
-        filtered.forEach((item, index) => {
-            let cleanKeterangan = (item.keterangan || '-').replace(/"/g, '""').replace(/\n/g, ' ');
-            csvContent += `${index + 1},"${item.nama}","${item.pekerjaan}",${formatTanggal(item.tanggal)},${item.jamMasuk},${item.jamPulang},"${item.durasi}","${cleanKeterangan}"\n`;
+        const bln = document.getElementById('filterBulan').value;
+        const thn = document.getElementById('filterTahun').value;
+        const filtered = dataLembur.filter(item => {
+            const d = new Date(item.tanggal);
+            return (bln === 'all' || d.getMonth() == bln) && d.getFullYear() == thn;
         });
+        if (filtered.length === 0) { alert("Tidak ada data!"); return; }
 
+        let csv = "data:text/csv;charset=utf-8,\uFEFFNo,Nama,Pekerjaan,Tanggal,Masuk,Pulang,Durasi,Tugas\n";
+        filtered.forEach((item, index) => {
+            let ket = (item.keterangan || '-').replace(/"/g, '""').replace(/\n/g, ' ');
+            csv += `${index+1},"${item.nama}","${item.pekerjaan}",${formatTanggal(item.tanggal)},${item.jamMasuk},${item.jamPulang},"${item.durasi}","${ket}"\n`;
+        });
         const link = document.createElement("a");
-        link.setAttribute("href", encodeURI(csvContent));
-        link.setAttribute("download", `Laporan_Lembur_Filtered.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        link.setAttribute("href", encodeURI(csv));
+        link.setAttribute("download", `Rekap_Lembur.csv`);
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 </script>
-
 </body>
 </html>
