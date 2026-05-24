@@ -189,7 +189,7 @@
 
 <script>
     // ==========================================
-    // ⚠️ PASTE LINK KAMU DI ANTARA TANDA PETIK DI BAWAH INI
+    // ⚠️ LINK UTAMA JEMBATAN GOOGLE SHEETS ANDA
     // ==========================================
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwpHGS0eEHYVpkKBL9eTlIQY2t0ddHpp_Z_z6xnNukFbvHc8BCSlhqxhL0TfQCjtaY3/exec"; 
     
@@ -206,10 +206,12 @@
 
     document.getElementById('tanggal').valueAsDate = new Date();
 
-    muatDataDariPusat();
+    // Jalankan pengecekan otomatis saat pertama kali web dimuat
+    cekStatusLoginOtomatis();
 
     function muatDataDariPusat() {
-       if(SCRIPT_URL === "PASTE_URL_WEB_APP_KAMU_DISINI") return;
+        if(SCRIPT_URL === "PASTE_URL_WEB_APP_KAMU_DISINI") return;
+        document.getElementById('adminLoading').style.display = 'block';
         fetch(SCRIPT_URL)
         .then(response => response.json())
         .then(data => {
@@ -223,6 +225,15 @@
         });
     }
 
+    function cekStatusLoginOtomatis() {
+        // Jika di sesi ini admin terdeteksi sudah login, langsung panggil datanya
+        if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+            muatDataDariPusat();
+        } else {
+            muatDataDariPusat();
+        }
+    }
+
     function switchMode(mode) {
         const container = document.getElementById('mainContainer');
         const btnUser = document.getElementById('btnUser');
@@ -233,18 +244,19 @@
         const subTitle = document.getElementById('subTitle');
 
         if (mode === 'admin') {
-            let pin = prompt("Masukkan Password Admin:");
-            if (pin === PASSWORD_ADMIN) {
-                container.classList.add('admin-mode');
-                btnAdmin.classList.add('active-admin');
-                btnUser.classList.remove('active-user');
-                userSection.classList.remove('active');
-                adminSection.classList.add('active');
-                mainTitle.innerText = "Panel Kontrol Admin";
-                subTitle.innerText = "Manajemen data real-time terhubung langsung ke Google Sheets";
-                muatDataDariPusat();
-            } else if (pin !== null) { 
-                alert("Password Salah!"); 
+            let sudahLogin = sessionStorage.getItem('adminLoggedIn');
+            if (sudahLogin === 'true') {
+                // Jika sudah login di sesi ini, langsung buka tanpa prompt password
+                bukaPanelAdmin(container, btnAdmin, btnUser, userSection, adminSection, mainTitle, subTitle);
+            } else {
+                // Jika belum, minta password biasa
+                let pin = prompt("Masukkan Password Admin:");
+                if (pin === PASSWORD_ADMIN) {
+                    sessionStorage.setItem('adminLoggedIn', 'true'); // Simpan status login di tab browser
+                    bukaPanelAdmin(container, btnAdmin, btnUser, userSection, adminSection, mainTitle, subTitle);
+                } else if (pin !== null) { 
+                    alert("Password Salah!"); 
+                }
             }
         } else {
             container.classList.remove('admin-mode');
@@ -257,6 +269,17 @@
             document.getElementById('searchNamaKaryawan').value = '';
             muatDataDariPusat();
         }
+    }
+
+    function bukaPanelAdmin(container, btnAdmin, btnUser, userSection, adminSection, mainTitle, subTitle) {
+        container.classList.add('admin-mode');
+        btnAdmin.classList.add('active-admin');
+        btnUser.classList.remove('active-user');
+        userSection.classList.remove('active');
+        adminSection.classList.add('active');
+        mainTitle.innerText = "Panel Kontrol Admin";
+        subTitle.innerText = "Manajemen data real-time terhubung langsung ke Google Sheets";
+        muatDataDariPusat();
     }
 
     function hitungDurasi(masuk, pulang) {
@@ -276,10 +299,8 @@
 
     document.getElementById('overtimeForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        
         const btnSubmit = document.getElementById('btnSubmitForm');
         const loadingText = document.getElementById('submitLoading');
-        
         btnSubmit.disabled = true;
         loadingText.style.display = 'block';
 
