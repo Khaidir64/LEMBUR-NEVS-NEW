@@ -191,7 +191,7 @@
     // ==========================================
     // ⚠️ PASTE LINK KAMU DI ANTARA TANDA PETIK DI BAWAH INI
     // ==========================================
-    const SCRIPT_URL = "PASTE_URL_WEB_APP_KAMU_DISINI"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwpHGS0eEHYVpkKBL9eTlIQY2t0ddHpp_Z_z6xnNukFbvHc8BCSlhqxhL0TfQCjtaY3/exec"; 
     
     let dataLembur = [];
     const PASSWORD_ADMIN = "Galaxy88"; 
@@ -209,7 +209,7 @@
     muatDataDariPusat();
 
     function muatDataDariPusat() {
-        if(SCRIPT_URL === "https://script.google.com/macros/s/AKfycbwpHGS0eEHYVpkKBL9eTlIQY2t0ddHpp_Z_z6xnNukFbvHc8BCSlhqxhL0TfQCjtaY3/exec") return;
+       if(SCRIPT_URL === "PASTE_URL_WEB_APP_KAMU_DISINI") return;
         fetch(SCRIPT_URL)
         .then(response => response.json())
         .then(data => {
