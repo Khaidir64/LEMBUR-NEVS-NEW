@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Lembur Karyawan - Nevs</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --admin-color: #7c3aed;
+            --admin-hover: #6d28d9;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; display: flex; flex-direction: column; align-items: center; }
+
+        .container { width: 100%; max-width: 1200px; }
+
+        /* Navigasi */
+        .nav-mode { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; }
+
+        .btn-mode { padding: 8px 16px; border: 1px solid var(--border-color); background: #fff; cursor: pointer; border-radius: 20px; font-weight: 600; color: #64748b; transition: all 0.2s; }
+
+        .btn-mode.active-user { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+        .btn-mode.active-admin { background: var(--admin-color); color: white; border-color: var(--admin-color); }
+
+        /* Header Area dengan Logo */
+        header { background: var(--card-bg); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid var(--border-color); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; text-align: center; }
+
+        @media (min-width: 600px) { header { flex-direction: row; text-align: left; justify-content: space-between; padding: 20px 35px; } }
+
+        .header-text h1 { color: var(--primary-color); font-size: 26px; margin-bottom: 5px; }
+
+        .admin-mode .header-text h1 { color: var(--admin-color); }
+
+        .header-text p { color: #64748b; font-size: 14px; }
+
+        .brand-logo { max-height: 65px; max-width: 180px; object-fit: contain; }
+
+        /* Filter Section Admin & Karyawan */
+        .admin-controls, .user-controls { display: flex; gap: 10px; margin-bottom: 20px; background: #f1f5f9; padding: 15px; border-radius: 8px; flex-wrap: wrap; align-items: center; }
+        .admin-controls select, .user-controls input { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); outline: none; font-size: 14px; }
+        .user-controls input { min-width: 250px; flex: 1; max-width: 400px; }
+
+        /* Layouts & Cards */
+        .view-section { display: none; }
+        .view-section.active { display: grid; gap: 25px; }
+        .user-grid { grid-template-columns: 1fr; justify-content: center; max-width: 750px; margin: 0 auto; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid var(--border-color); }
+        .card h2 { font-size: 18px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid var(--border-color); }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #475569; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; }
+        .form-group textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary-color); }
+        .admin-mode .form-group input:focus, .admin-mode .form-group textarea:focus { border-color: var(--admin-color); }
+
+        button.btn-submit { width: 100%; padding: 11px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        button.btn-submit:hover { background-color: var(--primary-hover); }
+
+        .btn-export { background-color: #16a34a; padding: 8px 16px; font-size: 14px; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-export:hover { background-color: #15803d; }
+
+        /* Tables */
+        .table-container { overflow-x: auto; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+        td.keterangan-cell { white-space: normal; min-width: 220px; max-width: 350px; word-wrap: break-word; }
+        th { background-color: #f1f5f9; color: #475569; }
+        
+        .btn-delete { background-color: #ef4444; padding: 5px 10px; font-size: 12px; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-delete:hover { background-color: #dc2626; }
+
+        .no-data { text-align: center; color: #94a3b8; padding: 30px; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="mainContainer">
+    <div class="nav-mode">
+        <button class="btn-mode active-user" id="btnUser" onclick="switchMode('user')">KARYAWAN</button>
+        <button class="btn-mode" id="btnAdmin" onclick="switchMode('admin')">ADMIN</button>
+    </div>
+
+    <header>
+        <div class="header-text">
+            <h1 id="mainTitle">Sistem Pencatatan Lembur Nevs Banjarmasin</h1>
+            <p id="subTitle">Silakan masukkan data jam masuk dan pulang lembur Anda</p>
+        </div>
+        <img class="brand-logo" id="companyLogo" src="LOGO.png" alt="Logo Perusahaan" onerror="this.style.display='none'">
+    </header>
+
+    <div id="userSection" class="view-section user-grid active">
+        <div class="card">
+            <h2>Form Input Lembur</h2>
+            <form id="overtimeForm">
+                <div class="form-group">
+                    <label for="nama">Nama Karyawan</label>
+                    <input type="text" id="nama" placeholder="Nama Lengkap" required>
+                </div>
+                <div class="form-group">
+                    <label for="pekerjaan">Pekerjaan / Bagian</label>
+                    <input type="text" id="pekerjaan" placeholder="Contoh: Produksi / Desain" required>
+                </div>
+                <div class="form-group">
+                    <label for="tanggal">Tanggal Lembur</label>
+                    <input type="date" id="tanggal" required>
+                </div>
+                <div class="form-group">
+                    <label for="jamMasuk">Jam Masuk Lembur</label>
+                    <input type="time" id="jamMasuk" required>
+                </div>
+                <div class="form-group">
+                    <label for="jamPulang">Jam Pulang Lembur</label>
+                    <input type="time" id="jamPulang" required>
+                </div>
+                <div class="form-group">
+                    <label for="keterangan">Keterangan Lembur / Tugas</label>
+                    <textarea id="keterangan" placeholder="Contoh: Menyelesaikan cetak jersey atau maintenance mesin" required></textarea>
+                </div>
+                <button type="submit" class="btn-submit">Kirim Data Lembur</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Cek Riwayat Lembur Mandiri</h2>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 12px;">Ketik nama Anda untuk melihat riwayat lembur pribadi yang sudah terdata di sistem.</p>
+            
+            <div class="user-controls">
+                <input type="text" id="searchNamaKaryawan" oninput="tampilkanRiwayatKaryawan()" placeholder="Masukkan Nama Anda...">
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Tanggal</th>
+                            <th>Pekerjaan</th>
+                            <th>Jam Masuk</th>
+                            <th>Jam Pulang</th>
+                            <th>Total Durasi</th>
+                            <th>Keterangan Tugas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody"></tbody>
+                </table>
+                <div id="userNoDataMessage" class="no-data">Silakan ketik nama Anda untuk memunculkan riwayat.</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminSection" class="view-section admin-grid">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <h2>Panel Rekap Lembur (Filter Bulanan)</h2>
+                <button class="btn-export" onclick="exportToCSV()">Unduh Hasil Filter (Excel)</button>
+            </div>
+
+            <div class="admin-controls">
+                <span style="font-weight: 600; font-size: 14px;">Filter Tampilan:</span>
+                <select id="filterBulan" onchange="tampilkanDataAdmin()">
+                    <option value="all">Semua Bulan</option>
+                    <option value="0">Januari</option>
+                    <option value="1">Februari</option>
+                    <option value="2">Maret</option>
+                    <option value="3">April</option>
+                    <option value="4">Mei</option>
+                    <option value="5">Juni</option>
+                    <option value="6">Juli</option>
+                    <option value="7">Agustus</option>
+                    <option value="8">September</option>
+                    <option value="9">Oktober</option>
+                    <option value="10">November</option>
+                    <option value="11">Desember</option>
+                </select>
+                <select id="filterTahun" onchange="tampilkanDataAdmin()"></select>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama</th>
+                            <th>Pekerjaan</th>
+                            <th>Tanggal</th>
+                            <th>Jam Masuk</th>
+                            <th>Jam Pulang</th>
+                            <th>Total Durasi</th>
+                            <th>Keterangan Tugas</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+                <div id="noDataMessage" class="no-data">Tidak ada data lembur yang cocok dengan filter ini.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Database lokal browser
+    let dataLembur = JSON.parse(localStorage.getItem('dataLembur')) || [];
+    const PASSWORD_ADMIN = "Galaxy88"; 
+
+    // Generate pilihan tahun otomatis
+    const filterTahun = document.getElementById('filterTahun');
+    const tahunSekarang = new Date().getFullYear();
+    for(let i = tahunSekarang; i >= tahunSekarang - 2; i--) {
+        let opt = document.createElement('option');
+        opt.value = i; opt.innerHTML = i;
+        filterTahun.appendChild(opt);
+    }
+
+    // Set default tanggal input hari ini
+    document.getElementById('tanggal').valueAsDate = new Date();
+
+    // Tampilkan riwayat kosong di awal halaman user
+    tampilkanRiwayatKaryawan();
+
+    function switchMode(mode) {
+        const container = document.getElementById('mainContainer');
+        const btnUser = document.getElementById('btnUser');
+        const btnAdmin = document.getElementById('btnAdmin');
+        const userSection = document.getElementById('userSection');
+        const adminSection = document.getElementById('adminSection');
+        const mainTitle = document.getElementById('mainTitle');
+        const subTitle = document.getElementById('subTitle');
+
+        if (mode === 'admin') {
+            let pin = prompt("Masukkan Password Admin:");
+            if (pin === PASSWORD_ADMIN) {
+                container.classList.add('admin-mode');
+                btnAdmin.classList.add('active-admin');
+                btnUser.classList.remove('active-user');
+                userSection.classList.remove('active');
+                adminSection.classList.add('active');
+                mainTitle.innerText = "Panel Kontrol Admin";
+                subTitle.innerText = "Manajemen data, hapus catatan, dan ekspor laporan bulanan";
+                tampilkanDataAdmin();
+            } else if (pin !== null) { 
+                alert("Password Salah! Akses ditolak."); 
+            }
+        } else {
+            container.classList.remove('admin-mode');
+            btnAdmin.classList.remove('active-admin');
+            btnUser.classList.add('active-user');
+            userSection.classList.add('active');
+            adminSection.classList.remove('active');
+            mainTitle.innerText = "Sistem Pencatatan Lembur Nevs Banjarmasin";
+            subTitle.innerText = "Silakan masukkan data jam masuk dan pulang lembur Anda";
+            document.getElementById('searchNamaKaryawan').value = '';
+            tampilkanRiwayatKaryawan();
+        }
+    }
+
+    function hitungDurasi(masuk, pulang) {
+        let [jamM, minM] = masuk.split(':').map(Number);
+        let [jamP, minP] = pulang.split(':').map(Number);
+        let totalMenitMasuk = (jamM * 60) + minM;
+        let totalMenitPulang = (jamP * 60) + minP;
+
+        if (totalMenitPulang < totalMenitMasuk) { totalMenitPulang += 24 * 60; }
+
+        let selisihMenit = totalMenitPulang - totalMenitMasuk;
+        return `${Math.floor(selisihMenit / 60)} Jam ${selisihMenit % 60} Menit`;
+    }
+
+    function formatTanggal(stringTanggal) {
+        return new Date(stringTanggal).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
+    }
+
+    // Submit form input lembur
+    document.getElementById('overtimeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const nama = document.getElementById('nama').value;
+        const pekerjaan = document.getElementById('pekerjaan').value;
+        const tanggal = document.getElementById('tanggal').value;
+        const jamMasuk = document.getElementById('jamMasuk').value;
+        const jamPulang = document.getElementById('jamPulang').value;
+        const keterangan = document.getElementById('keterangan').value;
+        const durasi = hitungDurasi(jamMasuk, jamPulang);
+
+        dataLembur.push({ nama, pekerjaan, tanggal, jamMasuk, jamPulang, keterangan, durasi });
+        localStorage.setItem('dataLembur', JSON.stringify(dataLembur));
+
+        alert("Data lembur Anda berhasil dikirim ke Admin!");
+        this.reset();
+        document.getElementById('tanggal').valueAsDate = new Date();
+        
+        // Reset pencarian riwayat setelah input
+        document.getElementById('searchNamaKaryawan').value = '';
+        tampilkanRiwayatKaryawan();
+    });
+
+    // FUNGSI BARU: Render tabel riwayat khusus karyawan mandiri
+    function tampilkanRiwayatKaryawan() {
+        const keyword = document.getElementById('searchNamaKaryawan').value.trim().toLowerCase();
+        const userTableBody = document.getElementById('userTableBody');
+        const userNoDataMessage = document.getElementById('userNoDataMessage');
+        
+        userTableBody.innerHTML = '';
+
+        if (keyword === '') {
+            userNoDataMessage.innerText = "Silakan ketik nama Anda untuk memunculkan riwayat.";
+            userNoDataMessage.style.display = 'block';
+            return;
+        }
+
+        // Cari data yang namanya mengandung kata kunci pencarian
+        const riwayatKaryawan = dataLembur.filter(item => item.nama.toLowerCase().includes(keyword));
+
+        if (riwayatKaryawan.length === 0) {
+            userNoDataMessage.innerText = `Tidak ada data lembur atas nama "${document.getElementById('searchNamaKaryawan').value}"`;
+            userNoDataMessage.style.display = 'block';
+            return;
+        }
+
+        userNoDataMessage.style.display = 'none';
+
+        // Tampilkan riwayat (Diurutkan dari tanggal terbaru)
+        const sortedRiwayat = [...riwayatKaryawan].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+        sortedRiwayat.forEach((item, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${formatTanggal(item.tanggal)}</td>
+                <td>${item.pekerjaan}</td>
+                <td>${item.jamMasuk}</td>
+                <td>${item.jamPulang}</td>
+                <td><strong>${item.durasi}</strong></td>
+                <td class="keterangan-cell">${item.keterangan || '-'}</td>
+            `;
+            userTableBody.appendChild(row);
+        });
+    }
+
+    function getFilteredData() {
+        const bln = document.getElementById('filterBulan').value;
+        const thn = document.getElementById('filterTahun').value;
+
+        return dataLembur.filter(item => {
+            const d = new Date(item.tanggal);
+            const matchBulan = (bln === 'all' || d.getMonth() == bln);
+            const matchTahun = (d.getFullYear() == thn);
+            return matchBulan && matchTahun;
+        });
+    }
+
+    function tampilkanDataAdmin() {
+        const tableBody = document.getElementById('tableBody');
+        const noDataMessage = document.getElementById('noDataMessage');
+        const filtered = getFilteredData();
+        
+        tableBody.innerHTML = '';
+        if (filtered.length === 0) {
+            noDataMessage.style.display = 'block';
+            return;
+        }
+        noDataMessage.style.display = 'none';
+
+        filtered.forEach((item, index) => {
+            const originalIndex = dataLembur.indexOf(item);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td><strong>${item.nama}</strong></td>
+                <td>${item.pekerjaan}</td>
+                <td>${formatTanggal(item.tanggal)}</td>
+                <td>${item.jamMasuk}</td>
+                <td>${item.jamPulang}</td>
+                <td><strong>${item.durasi}</strong></td>
+                <td class="keterangan-cell">${item.keterangan || '-'}</td>
+                <td><button class="btn-delete" onclick="hapusData(${originalIndex})">Hapus</button></td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    function hapusData(index) {
+        if(confirm("Hapus data lembur ini secara permanen?")) {
+            dataLembur.splice(index, 1);
+            localStorage.setItem('dataLembur', JSON.stringify(dataLembur));
+            tampilkanDataAdmin();
+        }
+    }
+
+    function exportToCSV() {
+        const filtered = getFilteredData();
+        if (filtered.length === 0) { alert("Tidak ada data untuk diekspor!"); return; }
+
+        let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
+        csvContent += "No,Nama Karyawan,Pekerjaan,Tanggal,Jam Masuk,Jam Pulang,Total Durasi,Keterangan Lembur\n";
+
+        filtered.forEach((item, index) => {
+            let cleanKeterangan = (item.keterangan || '-').replace(/"/g, '""').replace(/\n/g, ' ');
+            csvContent += `${index + 1},"${item.nama}","${item.pekerjaan}",${formatTanggal(item.tanggal)},${item.jamMasuk},${item.jamPulang},"${item.durasi}","${cleanKeterangan}"\n`;
+        });
+
+        const link = document.createElement("a");
+        link.setAttribute("href", encodeURI(csvContent));
+        link.setAttribute("download", `Laporan_Lembur_Filtered.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+
+</body>
+</html>
