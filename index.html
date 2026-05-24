@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistem Lembur Karyawan - Nevs</title>
     <style>
         :root {
@@ -18,36 +18,35 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 12px; display: flex; flex-direction: column; align-items: center; }
+        /* Dioptimalkan: Padding body diperkecil di HP agar layar terasa luas */
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 8px; display: flex; flex-direction: column; align-items: center; }
 
         .container { width: 100%; max-width: 1200px; }
 
-        /* Navigasi - Mobile Friendly (Lebih Besar di HP) */
-        .nav-mode { display: flex; justify-content: center; gap: 8px; margin-bottom: 18px; width: 100%; }
+        /* Navigasi - Dioptimalkan untuk kenyamanan jempol di HP */
+        .nav-mode { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; width: 100%; }
 
-        .btn-mode { flex: 1; max-width: 200px; padding: 12px 16px; border: 1px solid var(--border-color); background: #fff; cursor: pointer; border-radius: 12px; font-size: 14px; font-weight: 700; color: #64748b; transition: all 0.2s; text-align: center; -webkit-tap-highlight-color: transparent; }
+        .btn-mode { flex: 1; max-width: 50%; padding: 14px 10px; border: 1px solid var(--border-color); background: #fff; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: 700; color: #64748b; transition: all 0.2s; text-align: center; -webkit-tap-highlight-color: transparent; }
 
         .btn-mode.active-user { background: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); }
 
         .btn-mode.active-admin { background: var(--admin-color); color: white; border-color: var(--admin-color); box-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.2); }
 
-        /* Header Area dengan Logo */
-        header { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border-color); display: flex; flex-direction: column-reverse; align-items: center; justify-content: center; gap: 12px; text-align: center; }
+        /* Header Area dengan Logo - Responsif fleksibel */
+        header { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); display: flex; flex-direction: column-reverse; align-items: center; justify-content: center; gap: 12px; text-align: center; }
 
         @media (min-width: 600px) { 
             body { padding: 20px; }
-            header { flex-direction: row; text-align: left; justify-content: space-between; padding: 20px 30px; } 
+            header { flex-direction: row; text-align: left; justify-content: space-between; padding: 20px 30px; margin-bottom: 20px; } 
             .nav-mode { gap: 10px; margin-bottom: 25px; }
-            .btn-mode { padding: 10px 20px; border-radius: 20px; font-size: 14px; }
+            .btn-mode { padding: 12px 20px; border-radius: 20px; font-size: 14px; max-width: 200px; }
         }
 
-        .header-text h1 { color: var(--primary-color); font-size: 20px; margin-bottom: 4px; line-height: 1.3; }
-
+        .header-text h1 { color: var(--primary-color); font-size: 18px; margin-bottom: 4px; line-height: 1.3; font-weight: 700; }
         .admin-mode .header-text h1 { color: var(--admin-color); }
+        .header-text p { color: #64748b; font-size: 12px; }
 
-        .header-text p { color: #64748b; font-size: 13px; }
-
-        .brand-logo { max-height: 55px; max-width: 150px; object-fit: contain; }
+        .brand-logo { max-height: 50px; max-width: 140px; object-fit: contain; }
 
         @media (min-width: 600px) {
             .header-text h1 { font-size: 24px; }
@@ -56,8 +55,8 @@
         }
 
         /* Filter Section Admin & Karyawan */
-        .admin-controls, .user-controls { display: flex; gap: 10px; margin-bottom: 15px; background: #f1f5f9; padding: 12px; border-radius: 8px; flex-wrap: wrap; align-items: center; width: 100%; }
-        .admin-controls select, .user-controls input { padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); outline: none; font-size: 14px; width: 100%; }
+        .admin-controls, .user-controls { display: flex; gap: 10px; margin-bottom: 15px; background: #f1f5f9; padding: 10px; border-radius: 8px; flex-wrap: wrap; align-items: center; width: 100%; }
+        .admin-controls select, .user-controls input { padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); outline: none; font-size: 14px; width: 100%; background: #fff; }
         
         @media (min-width: 600px) {
             .admin-controls select { width: auto; min-width: 150px; }
@@ -67,23 +66,26 @@
 
         /* Layouts & Cards */
         .view-section { display: none; }
-        .view-section.active { display: grid; gap: 20px; }
+        .view-section.active { display: grid; gap: 15px; }
         .user-grid { grid-template-columns: 1fr; justify-content: center; max-width: 100%; margin: 0 auto; }
         
         @media (min-width: 768px) { .user-grid { max-width: 750px; } }
         
-        .card { background: var(--card-bg); padding: 16px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border: 1px solid var(--border-color); width: 100%; }
+        /* Padding card dioptimalkan agar ramah layar sempit */
+        .card { background: var(--card-bg); padding: 14px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border: 1px solid var(--border-color); width: 100%; }
         
         @media (min-width: 600px) { .card { padding: 25px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); } }
         
-        .card h2 { font-size: 16px; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid var(--border-color); }
+        .card h2 { font-size: 15px; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid var(--border-color); }
         
         @media (min-width: 600px) { .card h2 { font-size: 18px; margin-bottom: 15px; padding-bottom: 8px; } }
 
         .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: #475569; }
-        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; -webkit-appearance: none; }
-        .form-group textarea { resize: vertical; min-height: 70px; font-family: inherit; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
+        
+        /* Tinggi input ditambah sedikit agar teks bawaan keyboard HP tidak terpotong */
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; -webkit-appearance: none; background: #fff; }
+        .form-group textarea { resize: vertical; min-height: 75px; font-family: inherit; }
 
         @media (min-width: 600px) {
             .form-group { margin-bottom: 15px; }
@@ -94,15 +96,15 @@
         .form-group input:focus, .form-group textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
         .admin-mode .form-group input:focus, .admin-mode .form-group textarea:focus { border-color: var(--admin-color); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1); }
 
-        button.btn-submit { width: 100%; padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        button.btn-submit { width: 100%; padding: 14px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         button.btn-submit:hover { background-color: var(--primary-hover); }
 
-        .btn-export { width: 100%; background-color: #16a34a; padding: 10px 16px; font-size: 14px; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; }
+        .btn-export { width: 100%; background-color: #16a34a; padding: 12px 16px; font-size: 14px; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; text-align: center; }
         .btn-export:hover { background-color: #15803d; }
         
         @media (min-width: 600px) { .btn-export { width: auto; padding: 8px 16px; } }
 
-        /* Tables - Anti Berantakan di Layar HP */
+        /* Tables - Proteksi agar tidak merusak struktur halaman di HP */
         .table-container { overflow-x: auto; margin-top: 10px; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; -webkit-overflow-scrolling: touch; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
         th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
@@ -112,7 +114,7 @@
             th, td { padding: 12px 15px; }
         }
         
-        td.keterangan-cell { white-space: normal; min-width: 180px; max-width: 300px; word-wrap: break-word; }
+        td.keterangan-cell { white-space: normal; min-width: 160px; max-width: 250px; word-wrap: break-word; }
         th { background-color: #f1f5f9; color: #475569; font-weight: 600; }
         
         .btn-delete { background-color: #ef4444; padding: 6px 12px; font-size: 12px; color: white; border: none; border-radius: 4px; cursor: pointer; }
@@ -162,7 +164,7 @@
                     <input type="time" id="jamPulang" required>
                 </div>
                 <div class="form-group">
-                    <label for="keterangan">Keterangan Lembur / Tugas</label>
+                    <label status="keterangan">Keterangan Lembur / Tugas</label>
                     <textarea id="keterangan" placeholder="Contoh: Menyelesaikan cetak jersey atau maintenance mesin" required></textarea>
                 </div>
                 <button type="submit" class="btn-submit">Kirim Data Lembur</button>
