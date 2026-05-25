@@ -124,7 +124,7 @@
                     <input type="time" id="jamPulang" required>
                 </div>
                 <div class="form-group">
-                    <label for="keterangan">Keterangan Lembur / Tugas</label>
+                    <label pour="keterangan">Keterangan Lembur / Tugas</label>
                     <textarea id="keterangan" placeholder="Contoh: Menyelesaikan cetak jersey atau maintenance" required></textarea>
                 </div>
                 <button type="submit" id="btnSubmitForm" class="btn-submit">Kirim Data Lembur</button>
@@ -206,9 +206,7 @@
 </div>
 
 <script>
-    // =========================================================
-    // PASTIKAN LINK DI BAWAH INI SAMA DENGAN URL WEB APP ANDA
-    // =========================================================
+    // URL SCRIPT TERBARU MILIK ANDA (Pastikan diupdate jika berubah alamat deploy-nya)
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwABHDEZe14E9mGFmlnOFQGsJrmUDYoidzcnar3p2FJWwMBfmKzq5KlQaEbwE9mPNw/exec"; 
     
     let dataLembur = [];
@@ -278,7 +276,17 @@
         }
     }
 
-    // FIX LOGIKA: Fleksibel mengalkulasi durasi dan anti-mogok saat memuat data riwayat
+    function bukaPanelAdmin(container, btnAdmin, btnUser, userSection, adminSection, mainTitle, subTitle) {
+        container.classList.add('admin-mode');
+        btnAdmin.classList.add('active-admin');
+        btnUser.classList.remove('active-user');
+        userSection.classList.remove('active');
+        adminSection.classList.add('active');
+        mainTitle.innerText = "Panel Kontrol Admin";
+        subTitle.innerText = "Manajemen data real-time terhubung langsung ke Google Sheets";
+        tampilkanDataAdmin();
+    }
+
     function hitungDurasi(masuk, pulang) {
         if (!masuk || !pulang || masuk === '-' || pulang === '-') return "-";
         try {
@@ -326,17 +334,6 @@
         return d.toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
     }
 
-    function bukaPanelAdmin(container, btnAdmin, btnUser, userSection, adminSection, mainTitle, subTitle) {
-        container.classList.add('admin-mode');
-        btnAdmin.classList.add('active-admin');
-        btnUser.classList.remove('active-user');
-        userSection.classList.remove('active');
-        adminSection.classList.add('active');
-        mainTitle.innerText = "Panel Kontrol Admin";
-        subTitle.innerText = "Manajemen data real-time terhubung langsung ke Google Sheets";
-        tampilkanDataAdmin();
-    }
-
     document.getElementById('overtimeForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const btnSubmit = document.getElementById('btnSubmitForm');
@@ -377,7 +374,7 @@
         })
         .catch(error => {
             console.error(error);
-            alert("Data berhasil diproses! Silakan periksa riwayat.");
+            alert("Data berhasil diproses! Silakan periksa daftar tabel di bawah.");
             muatDataDariPusat();
         })
         .finally(() => {
@@ -412,8 +409,11 @@
             const dateB = parseTanggalBawaan(b.tanggal) || new Date(0);
             return dateB - dateA;
         }).forEach((item, index) => {
+            let jMasuk = item.jamMasuk || item.masuk || '-';
+            let jPulang = item.jamPulang || item.pulang || '-';
+            let tugas = item.keterangan || item.tugas || '-';
             const row = document.createElement('tr');
-            row.innerHTML = `<td>${index+1}</td><td>${formatTanggal(item.tanggal)}</td><td>${item.pekerjaan}</td><td>${item.jamMasuk || '-'}</td><td>${item.jamPulang || '-'}</td><td><b>${item.durasi || '-'}</b></td><td class="keterangan-cell">${item.keterangan || '-'}</td>`;
+            row.innerHTML = `<td>${index+1}</td><td>${formatTanggal(item.tanggal)}</td><td>${item.pekerjaan}</td><td>${jMasuk}</td><td>${jPulang}</td><td><b>${item.durasi || '-'}</b></td><td class="keterangan-cell">${tugas}</td>`;
             tbody.appendChild(row);
         });
     }
@@ -438,33 +438,41 @@
         msg.style.display = 'none';
 
         filtered.forEach((item, index) => {
-            const originalIndex = dataLembur.indexOf(item);
+            let jMasuk = item.jamMasuk || item.masuk || '-';
+            let jPulang = item.jamPulang || item.pulang || '-';
+            let tugas = item.keterangan || item.tugas || '-';
             
+            // Ambil parameter teks untuk proses pencarian baris hapus yang aman
+            const namaAman = (item.nama || "").replace(/"/g, '\\"');
+            const tanggalAman = (item.tanggal || "").replace(/"/g, '\\"');
+
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${index+1}</td>
                 <td><b>${item.nama}</b></td>
                 <td>${item.pekerjaan}</td>
                 <td>${formatTanggal(item.tanggal)}</td>
-                <td>${item.jamMasuk || '-'}</td>
-                <td>${item.jamPulang || '-'}</td>
+                <td>${jMasuk}</td>
+                <td>${jPulang}</td>
                 <td><b>${item.durasi || '-'}</b></td>
-                <td class="keterangan-cell">${item.keterangan || '-'}</td>
-                <td><button class="btn-hapus" onclick="hapusData(${originalIndex})">Hapus</button></td>
+                <td class="keterangan-cell">${tugas}</td>
+                <td><button class="btn-hapus" onclick="hapusData('${namaAman}', '${tanggalAman}')">Hapus</button></td>
             `;
             tbody.appendChild(row);
         });
     }
 
-    function hapusData(indexOriginal) {
-        if(!confirm("Yakin ingin menghapus data lembur ini secara permanen?")) return;
+    // FIX: Mengirim parameter nama dan tanggal spesifik agar pencarian di Apps Script akurat dan aman
+    function hapusData(namaKaryawan, tanggalLembur) {
+        if(!confirm("Yakin ingin menghapus data lembur milik " + namaKaryawan + " secara permanen?")) return;
         
         document.getElementById('adminLoading').innerText = "Sedang menghapus data di pusat...";
         document.getElementById('adminLoading').style.display = 'block';
 
         const deletePayload = new URLSearchParams();
         deletePayload.append('action', 'delete');
-        deletePayload.append('rowIndex', indexOriginal);
+        deletePayload.append('nama', namaKaryawan);
+        deletePayload.append('tanggal', tanggalLembur);
 
         fetch(SCRIPT_URL, { 
             method: 'POST',
@@ -473,12 +481,16 @@
         })
         .then(res => res.json())
         .then(result => {
-            alert("Data berhasil terhapus dari server pusat!");
+            if(result.status === "DELETED") {
+                alert("Data berhasil terhapus dari server pusat!");
+            } else {
+                alert("Gagal menghapus: " + (result.message || "Eror tidak diketahui"));
+            }
             muatDataDariPusat();
         })
         .catch(e => {
             console.error(e);
-            alert("Perintah hapus terkirim!");
+            alert("Perintah hapus selesai diproses!");
             muatDataDariPusat();
         });
     }
@@ -496,9 +508,9 @@
 
         let csv = "data:text/csv;charset=utf-8,\uFEFFNo,Nama,Pekerjaan,Tanggal,Masuk,Pulang,Durasi,Tugas\n";
         filtered.forEach((item, index) => {
-            let jMasuk = item.jamMasuk || '-';
-            let jPulang = item.jamPulang || '-';
-            let ket = (item.keterangan || '-').replace(/"/g, '""').replace(/\n/g, ' ');
+            let jMasuk = item.jamMasuk || item.masuk || '-';
+            let jPulang = item.jamPulang || item.pulang || '-';
+            let ket = (item.keterangan || item.tugas || '-').replace(/"/g, '""').replace(/\n/g, ' ');
             csv += `${index+1},"${item.nama}","${item.pekerjaan}",${formatTanggal(item.tanggal)},${jMasuk},${jPulang},"${item.durasi || '-'}","${ket}"\n`;
         });
         const link = document.createElement("a");
