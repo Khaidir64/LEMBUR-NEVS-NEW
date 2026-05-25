@@ -206,7 +206,7 @@
 </div>
 
 <script>
-    // URL DEPLOYMENT SCRIPT TERBARU ANDA
+    // PENTING: Ganti URL di bawah ini dengan URL Web App hasil deploy Anda jika berubah
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwABHDEZe14E9mGFmlnOFQGsJrmUDYoidzcnar3p2FJWwMBfmKzq5KlQaEbwE9mPNw/exec"; 
     
     let dataLembur = [];
@@ -367,14 +367,14 @@
         })
         .then(res => res.json())
         .then(result => {
-            alert("Data lembur Anda BERHASIL terkirim ke Google Sheets!");
+            alert("Data lembur Anda BERHASIL terkirim!");
             document.getElementById('overtimeForm').reset();
             document.getElementById('tanggal').valueAsDate = new Date();
             muatDataDariPusat();
         })
         .catch(error => {
             console.error(error);
-            alert("Data berhasil diproses! Silakan periksa daftar tabel di bawah.");
+            alert("Data selesai diproses! Silakan periksa tabel.");
             muatDataDariPusat();
         })
         .finally(() => {
@@ -409,9 +409,9 @@
             const dateB = parseTanggalBawaan(b.tanggal) || new Date(0);
             return dateB - dateA;
         }).forEach((item, index) => {
-            let jMasuk = item.jamMasuk || item.masuk || '-';
-            let jPulang = item.jamPulang || item.pulang || '-';
-            let tugas = item.keterangan || item.tugas || '-';
+            let jMasuk = item.jamMasuk || '-';
+            let jPulang = item.jamPulang || '-';
+            let tugas = item.keterangan || '-';
             const row = document.createElement('tr');
             row.innerHTML = `<td>${index+1}</td><td>${formatTanggal(item.tanggal)}</td><td>${item.pekerjaan}</td><td>${jMasuk}</td><td>${jPulang}</td><td><b>${item.durasi || '-'}</b></td><td class="keterangan-cell">${tugas}</td>`;
             tbody.appendChild(row);
@@ -438,14 +438,11 @@
         msg.style.display = 'none';
 
         filtered.forEach((item, index) => {
-            let jMasuk = item.jamMasuk || item.masuk || '-';
-            let jPulang = item.jamPulang || item.pulang || '-';
-            let tugas = item.keterangan || item.tugas || '-';
+            let jMasuk = item.jamMasuk || '-';
+            let jPulang = item.jamPulang || '-';
+            let tugas = item.keterangan || '-';
             
-            // Mengamankan petik ganda teks string parameter onclick
-            const namaAman = (item.nama || "").replace(/'/g, "\\'");
-            const tanggalAman = (item.tanggal || "").replace(/'/g, "\\'");
-            const jamMasukAman = (jMasuk).replace(/'/g, "\\'");
+            const rowIndexAsli = item.id; // Menggunakan indeks baris dari Apps Script
 
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -457,23 +454,21 @@
                 <td>${jPulang}</td>
                 <td><b>${item.durasi || '-'}</b></td>
                 <td class="keterangan-cell">${tugas}</td>
-                <td><button class="btn-hapus" onclick="hapusData('${namaAman}', '${tanggalAman}', '${jamMasukAman}')">Hapus</button></td>
+                <td><button class="btn-hapus" onclick="hapusData(${rowIndexAsli})">Hapus</button></td>
             `;
             tbody.appendChild(row);
         });
     }
 
-    function hapusData(namaKaryawan, tanggalLembur, jamMasukLembur) {
-        if(!confirm("Yakin ingin menghapus data lembur milik " + namaKaryawan + " secara permanen?")) return;
+    function hapusData(rowIndexAsli) {
+        if(!confirm("Yakin ingin menghapus data lembur ini secara permanen dari server?")) return;
         
         document.getElementById('adminLoading').innerText = "Sedang menghapus data di pusat...";
         document.getElementById('adminLoading').style.display = 'block';
 
         const deletePayload = new URLSearchParams();
         deletePayload.append('action', 'delete');
-        deletePayload.append('nama', namaKaryawan);
-        deletePayload.append('tanggal', tanggalLembur);
-        deletePayload.append('jamMasuk', jamMasukLembur);
+        deletePayload.append('rowIndex', rowIndexAsli);
 
         fetch(SCRIPT_URL, { 
             method: 'POST',
@@ -483,7 +478,7 @@
         .then(res => res.json())
         .then(result => {
             if(result.status === "DELETED") {
-                alert("Data berhasil terhapus dari server pusat!");
+                alert("Data berhasil terhapus!");
             } else {
                 alert("Gagal menghapus: " + (result.message || "Eror tidak diketahui"));
             }
@@ -509,9 +504,9 @@
 
         let csv = "data:text/csv;charset=utf-8,\uFEFFNo,Nama,Pekerjaan,Tanggal,Masuk,Pulang,Durasi,Tugas\n";
         filtered.forEach((item, index) => {
-            let jMasuk = item.jamMasuk || item.masuk || '-';
-            let jPulang = item.jamPulang || item.pulang || '-';
-            let ket = (item.keterangan || item.tugas || '-').replace(/"/g, '""').replace(/\n/g, ' ');
+            let jMasuk = item.jamMasuk || '-';
+            let jPulang = item.jamPulang || '-';
+            let ket = (item.keterangan || '-').replace(/"/g, '""').replace(/\n/g, ' ');
             csv += `${index+1},"${item.nama}","${item.pekerjaan}",${formatTanggal(item.tanggal)},${jMasuk},${jPulang},"${item.durasi || '-'}","${ket}"\n`;
         });
         const link = document.createElement("a");
