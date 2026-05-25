@@ -7,102 +7,456 @@
     <style>
         :root {
             --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
             --admin-color: #7c3aed;
-            --card-bg: rgba(255, 255, 255, 0.95);
+            --admin-hover: #6d28d9;
+            --card-bg: rgba(255, 255, 255, 0.95); /* Sedikit transparan (95%) agar teks di dalam kotak tetap mudah dibaca */
+            --text-color: #1e293b;
             --border-color: #e2e8f0;
+            
+            /* GANTI NAMA FILE DI BAWAH INI SUSAH DENGAN GAMBAR KAMU 
+               Contoh jika sudah diupload ke GitHub: url('background.jpg') atau url('BG_NEVS.png')
+            */
+            --bg-image: url('background.jpg'); 
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background: #f8fafc; padding: 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        body { 
+            background-image: var(--bg-image);
+            background-size: cover;             /* Membuat gambar menutupi seluruh layar browser */
+            background-position: center;        /* Posisi gambar selalu di tengah */
+            background-repeat: no-repeat;       /* Gambar tidak mengulang-ulang (pecah) */
+            background-attachment: fixed;       /* Gambar tetap diam saat form di-scroll ke bawah */
+            background-color: #f8fafc;          /* Warna cadangan jika gambar gagal dimuat */
+            color: var(--text-color); 
+            padding: 10px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh;
+        }
+        
         .container { width: 100%; max-width: 800px; }
-        .nav-mode { display: flex; gap: 8px; margin-bottom: 15px; }
-        .btn-mode { flex: 1; padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; color: #64748b; background: #fff; border: 1px solid var(--border-color); }
-        .btn-mode.active-user { background: var(--primary-color); color: white; }
-        .btn-mode.active-admin { background: var(--admin-color); color: white; }
+
+        .nav-mode { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 15px; width: 100%; }
+        .btn-mode { flex: 1; padding: 14px 10px; border: 1px solid var(--border-color); background: #fff; cursor: pointer; border-radius: 10px; font-size: 14px; font-weight: bold; color: #64748b; text-align: center; -webkit-tap-highlight-color: transparent; }
+        .btn-mode.active-user { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .btn-mode.active-admin { background: var(--admin-color); color: white; border-color: var(--admin-color); }
+
+        header { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color); display: flex; flex-direction: column-reverse; align-items: center; gap: 10px; text-align: center; backdrop-filter: blur(5px); }
+        .header-text h1 { color: var(--primary-color); font-size: 18px; margin-bottom: 4px; font-weight: 700; }
+        .admin-mode .header-text h1 { color: var(--admin-color); }
+        .header-text p { color: #64748b; font-size: 12px; }
+        .brand-logo { max-height: 50px; max-width: 140px; object-fit: contain; }
+
+        @media (min-width: 600px) {
+            header { flex-direction: row; text-align: left; justify-content: space-between; padding: 20px; }
+            .header-text h1 { font-size: 22px; }
+            .brand-logo { max-height: 60px; max-width: 160px; }
+        }
+
+        .admin-controls, .user-controls { display: flex; gap: 8px; margin-bottom: 12px; background: #f1f5f9; padding: 10px; border-radius: 8px; flex-wrap: wrap; width: 100%; }
+        .admin-controls select, .user-controls input { padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 14px; width: 100%; background: #fff; }
+
         .view-section { display: none; }
         .view-section.active { display: block; }
-        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 15px; }
-        .form-group { margin-bottom: 15px; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; }
-        button.btn-submit { width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-        th, td { padding: 10px; border: 1px solid var(--border-color); }
-        .btn-hapus { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+        .card { background: var(--card-bg); padding: 14px; border-radius: 12px; border: 1px solid var(--border-color); width: 100%; margin-bottom: 15px; position: relative; backdrop-filter: blur(5px); }
+        .card h2 { font-size: 15px; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid var(--border-color); }
+
+        .form-group { margin-bottom: 12px; text-align: left; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #475569; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; background: #fff; -webkit-appearance: none; }
+        .form-group textarea { resize: vertical; min-height: 70px; font-family: inherit; }
+        button.btn-submit { width: 100%; padding: 14px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        button.btn-submit:disabled { background-color: #cbd5e1; cursor: not-allowed; }
+
+        .table-container { overflow-x: auto; width: 100%; border: 1px solid var(--border-color); border-radius: 8px; -webkit-overflow-scrolling: touch; background: #fff; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+        td.keterangan-cell { white-space: normal; min-width: 150px; max-width: 250px; word-wrap: break-word; }
+        th { background-color: #f1f5f9; color: #475569; font-weight: 600; }
+        
+        .btn-export { width: 100%; background-color: #16a34a; padding: 12px; font-size: 14px; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; margin-bottom: 10px; }
+        @media (min-width: 600px) { .btn-export { width: auto; padding: 8px 16px; margin-bottom: 0; } }
+        .no-data { text-align: center; color: #94a3b8; padding: 15px; font-style: italic; font-size: 13px; }
+        
+        .loading-status { font-size: 13px; color: #2563eb; font-weight: 600; text-align: center; margin-bottom: 10px; display: none; }
+        .btn-hapus { background-color: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .btn-hapus:hover { background-color: #dc2626; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="mainContainer">
     <div class="nav-mode">
         <button class="btn-mode active-user" id="btnUser" onclick="switchMode('user')">KARYAWAN</button>
         <button class="btn-mode" id="btnAdmin" onclick="switchMode('admin')">ADMIN</button>
     </div>
 
+    <header>
+        <div class="header-text">
+            <h1 id="mainTitle">Sistem Pencatatan Lembur Nevs Banjarmasin</h1>
+            <p id="subTitle">Silakan masukkan data jam masuk dan pulang lembur Anda</p>
+        </div>
+        <img class="brand-logo" id="companyLogo" src="LOGO.png" alt="Logo Perusahaan" onerror="this.style.display='none'">
+    </header>
+
     <div id="userSection" class="view-section active">
         <div class="card">
             <h2>Form Input Lembur</h2>
+            <div id="submitLoading" class="loading-status">Sedang mengirim data ke pusat... Mohon tunggu...</div>
             <form id="overtimeForm">
-                <div class="form-group"><input type="text" id="nama" placeholder="Nama Karyawan" required></div>
-                <div class="form-group"><input type="text" id="pekerjaan" placeholder="Pekerjaan" required></div>
-                <div class="form-group"><input type="date" id="tanggal" required></div>
-                <div class="form-group"><input type="time" id="jamMasuk" required></div>
-                <div class="form-group"><input type="time" id="jamPulang" required></div>
-                <div class="form-group"><textarea id="keterangan" placeholder="Keterangan"></textarea></div>
-                <button type="submit" class="btn-submit">Kirim Data</button>
+                <div class="form-group">
+                    <label for="nama">Nama Karyawan</label>
+                    <input type="text" id="nama" placeholder="Nama Lengkap" required>
+                </div>
+                <div class="form-group">
+                    <label for="pekerjaan">Pekerjaan / Bagian</label>
+                    <input type="text" id="pekerjaan" placeholder="Contoh: Produksi / Desain" required>
+                </div>
+                <div class="form-group">
+                    <label for="tanggal">Tanggal Lembur</label>
+                    <input type="date" id="tanggal" required>
+                </div>
+                <div class="form-group">
+                    <label for="jamMasuk">Jam Masuk Lembur</label>
+                    <input type="time" id="jamMasuk" required>
+                </div>
+                <div class="form-group">
+                    <label for="jamPulang">Jam Pulang Lembur</label>
+                    <input type="time" id="jamPulang" required>
+                </div>
+                <div class="form-group">
+                    <label for="keterangan">Keterangan Lembur / Tugas</label>
+                    <textarea id="keterangan" placeholder="Contoh: Menyelesaikan cetak jersey atau maintenance" required></textarea>
+                </div>
+                <button type="submit" id="btnSubmitForm" class="btn-submit">Kirim Data Lembur</button>
             </form>
+        </div>
+
+        <div class="card">
+            <h2>Cek Riwayat Lembur Mandiri</h2>
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 10px;">Ketik nama Anda untuk melihat riwayat dari server pusat.</p>
+            <div class="user-controls">
+                <input type="text" id="searchNamaKaryawan" oninput="tampilkanRiwayatKaryawan()" placeholder="Masukkan Nama Anda...">
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Tanggal</th>
+                            <th>Pekerjaan</th>
+                            <th>Masuk</th>
+                            <th>Pulang</th>
+                            <th>Durasi</th>
+                            <th>Tugas</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody"></tbody>
+                </table>
+                <div id="userNoDataMessage" class="no-data">Silakan ketik nama Anda untuk memunculkan riwayat.</div>
+            </div>
         </div>
     </div>
 
     <div id="adminSection" class="view-section">
         <div class="card">
-            <h2>Panel Admin</h2>
-            <table>
-                <thead>
-                    <tr><th>Nama</th><th>Tugas</th><th>Aksi</th></tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <h2>Panel Rekap Lembur Pusat (Real-Time)</h2>
+                <button class="btn-export" onclick="exportToCSV()">Unduh Excel (CSV)</button>
+            </div>
+            <div id="adminLoading" class="loading-status" style="display:block;">Sedang memuat database pusat...</div>
+            <div class="admin-controls">
+                <select id="filterBulan" onchange="tampilkanDataAdmin()">
+                    <option value="all">Semua Bulan</option>
+                    <option value="0">Januari</option>
+                    <option value="1">Februari</option>
+                    <option value="2">Maret</option>
+                    <option value="3">April</option>
+                    <option value="4">Mei</option>
+                    <option value="5">Juni</option>
+                    <option value="6">Juli</option>
+                    <option value="7">Agustus</option>
+                    <option value="8">September</option>
+                    <option value="9">Oktober</option>
+                    <option value="10">November</option>
+                    <option value="11">Desember</option>
+                </select>
+                <select id="filterTahun" onchange="tampilkanDataAdmin()"></select>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama</th>
+                            <th>Pekerjaan</th>
+                            <th>Tanggal</th>
+                            <th>Masuk</th>
+                            <th>Pulang</th>
+                            <th>Durasi</th>
+                            <th>Tugas</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+                <div id="noDataMessage" class="no-data">Tidak ada data lembur di database pusat.</div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwpHGS0eEHYVpkKBL9eTlIQY2t0ddHpp_Z_z6xnNukFbvHc8BCSlhqxhL0TfQCjtaY3/exec";
+    // ==========================================
+    // ⚠️ LINK UTAMA JEMBATAN GOOGLE SHEETS ANDA
+    // ==========================================
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwpHGS0eEHYVpkKBL9eTlIQY2t0ddHpp_Z_z6xnNukFbvHc8BCSlhqxhL0TfQCjtaY3/exec"; 
+    
+    let dataLembur = [];
+    const PASSWORD_ADMIN = "Galaxy88"; 
 
-    // 1. Fungsi Switch Tab
-    function switchMode(mode) {
-        document.getElementById('userSection').classList.toggle('active', mode === 'user');
-        document.getElementById('adminSection').classList.toggle('active', mode === 'admin');
-        if(mode === 'admin') muatData();
+    const filterTahun = document.getElementById('filterTahun');
+    const tahunSekarang = new Date().getFullYear();
+    for(let i = tahunSekarang; i >= tahunSekarang - 2; i--) {
+        let opt = document.createElement('option');
+        opt.value = i; opt.innerHTML = i;
+        filterTahun.appendChild(opt);
     }
 
-    // 2. Muat Data
-    function muatData() {
+    document.getElementById('tanggal').valueAsDate = new Date();
+
+    cekStatusLoginOtomatis();
+
+    function muatDataDariPusat() {
+        if(SCRIPT_URL === "PASTE_URL_WEB_APP_KAMU_DISINI") return;
+        document.getElementById('adminLoading').style.display = 'block';
         fetch(SCRIPT_URL)
-        .then(res => res.json())
+        .then(response => response.json())
         .then(data => {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
-            data.forEach((item, index) => {
-                tbody.innerHTML += `<tr><td>${item.nama}</td><td>${item.keterangan}</td>
-                <td><button class="btn-hapus" onclick="hapusData(${index})">Hapus</button></td></tr>`;
-            });
+            dataLembur = data;
+            document.getElementById('adminLoading').style.display = 'none';
+            tampilkanDataAdmin();
+            tampilkanRiwayatKaryawan();
+        })
+        .catch(error => {
+            console.error("Gagal memuat:", error);
         });
     }
 
-    // 3. Hapus Data
-    function hapusData(index) {
-        if(!confirm("Yakin hapus data ini?")) return;
-        fetch(`${SCRIPT_URL}?action=delete&rowIndex=${index}`, {method: 'POST'})
-        .then(() => muatData());
+    function cekStatusLoginOtomatis() {
+        if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+            muatDataDariPusat();
+        } else {
+            muatDataDariPusat();
+        }
     }
 
-    // 4. Submit Form
-    document.getElementById('overtimeForm').addEventListener('submit', (e) => {
+    function switchMode(mode) {
+        const container = document.getElementById('mainContainer');
+        const btnUser = document.getElementById('btnUser');
+        const btnAdmin = document.getElementById('btnAdmin');
+        const userSection = document.getElementById('userSection');
+        const adminSection = document.getElementById('adminSection');
+        const mainTitle = document.getElementById('mainTitle');
+        const subTitle = document.getElementById('subTitle');
+
+        if (mode === 'admin') {
+            let sudahLogin = sessionStorage.getItem('adminLoggedIn');
+            if (sudahLogin === 'true') {
+                bukaPanelAdmin(container, btnAdmin, btnUser, userSection, adminSection, mainTitle, subTitle);
+            } else {
+                let pin = prompt("Masukkan Password Admin:");
+                if (pin === PASSWORD_ADMIN) {
+                    sessionStorage.setItem('adminLoggedIn', 'true');
+                    bukaPanelAdmin(container, btnAdmin, btnUser, userSection, adminSection, mainTitle, subTitle);
+                } else if (pin !== null) { 
+                    alert("Password Salah!"); 
+                }
+            }
+        } else {
+            container.classList.remove('admin-mode');
+            btnAdmin.classList.remove('active-admin');
+            btnUser.classList.add('active-user');
+            userSection.classList.add('active');
+            adminSection.classList.remove('active');
+            mainTitle.innerText = "Sistem Pencatatan Lembur Nevs Banjarmasin";
+            subTitle.innerText = "Silakan masukkan data jam masuk dan pulang lembur Anda";
+            document.getElementById('searchNamaKaryawan').value = '';
+            muatDataDariPusat();
+        }
+    }
+
+    function bukaPanelAdmin(container, btnAdmin, btnUser, userSection, adminSection, mainTitle, subTitle) {
+        container.classList.add('admin-mode');
+        btnAdmin.classList.add('active-admin');
+        btnUser.classList.remove('active-user');
+        userSection.classList.remove('active');
+        adminSection.classList.add('active');
+        mainTitle.innerText = "Panel Kontrol Admin";
+        subTitle.innerText = "Manajemen data real-time terhubung langsung ke Google Sheets";
+        muatDataDariPusat();
+    }
+
+    function hitungDurasi(masuk, pulang) {
+        let [jamM, minM] = masuk.split(':').map(Number);
+        let [jamP, minP] = pulang.split(':').map(Number);
+        let totalM = (jamM * 60) + minM;
+        let totalP = (jamP * 60) + minP;
+        if (totalP < totalM) { totalP += 24 * 60; }
+        let selisih = totalP - totalM;
+        return `${Math.floor(selisih / 60)} Jam ${selisih % 60} Menit`;
+    }
+
+    function formatTanggal(str) {
+        if(!str) return "-";
+        return new Date(str).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
+    }
+
+    document.getElementById('overtimeForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        const data = new FormData(e.target);
-        fetch(SCRIPT_URL, {method: 'POST', body: data})
-        .then(() => alert("Data Terkirim!"));
+        const btnSubmit = document.getElementById('btnSubmitForm');
+        const loadingText = document.getElementById('submitLoading');
+        btnSubmit.disabled = true;
+        loadingText.style.display = 'block';
+
+        const nama = document.getElementById('nama').value;
+        const pekerjaan = document.getElementById('pekerjaan').value;
+        const tanggal = document.getElementById('tanggal').value;
+        const jamMasuk = document.getElementById('jamMasuk').value;
+        const jamPulang = document.getElementById('jamPulang').value;
+        const keterangan = document.getElementById('keterangan').value;
+        const durasi = hitungDurasi(jamMasuk, jamPulang);
+
+        const urlKirim = `${SCRIPT_URL}?nama=${encodeURIComponent(nama)}&pekerjaan=${encodeURIComponent(pekerjaan)}&tanggal=${encodeURIComponent(tanggal)}&jamMasuk=${encodeURIComponent(jamMasuk)}&jamPulang=${encodeURIComponent(jamPulang)}&durasi=${encodeURIComponent(durasi)}&keterangan=${encodeURIComponent(keterangan)}`;
+
+        fetch(urlKirim, { method: 'POST' })
+        .then(response => {
+            alert("Data lembur Anda BERHASIL dikirim dan tersimpan di database pusat!");
+            this.reset();
+            document.getElementById('tanggal').valueAsDate = new Date();
+            muatDataDariPusat();
+        })
+        .catch(error => {
+            alert("Terjadi kesalahan sistem, silakan coba lagi.");
+            console.error(error);
+        })
+        .finally(() => {
+            btnSubmit.disabled = false;
+            loadingText.style.display = 'none';
+        });
     });
+
+    function tampilkanRiwayatKaryawan() {
+        const keyword = document.getElementById('searchNamaKaryawan').value.trim().toLowerCase();
+        const tbody = document.getElementById('userTableBody');
+        const msg = document.getElementById('userNoDataMessage');
+        tbody.innerHTML = '';
+
+        if (keyword === '') {
+            msg.innerText = "Silakan ketik nama Anda untuk memunculkan riwayat.";
+            msg.style.display = 'block';
+            return;
+        }
+
+        const filtered = dataLembur.filter(item => item.nama && item.nama.toLowerCase().includes(keyword));
+        if (filtered.length === 0) {
+            msg.innerText = `Tidak ada data untuk "${keyword}"`;
+            msg.style.display = 'block';
+            return;
+        }
+
+        msg.style.display = 'none';
+        filtered.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).forEach((item, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${index+1}</td><td>${formatTanggal(item.tanggal)}</td><td>${item.pekerjaan}</td><td>${item.jamMasuk}</td><td>${item.jamPulang}</td><td><b>${item.durasi}</b></td><td class="keterangan-cell">${item.keterangan || '-'}</td>`;
+            tbody.appendChild(row);
+        });
+    }
+
+    function tampilkanDataAdmin() {
+        const tbody = document.getElementById('tableBody');
+        const msg = document.getElementById('noDataMessage');
+        const bln = document.getElementById('filterBulan').value;
+        const thn = document.getElementById('filterTahun').value;
+        
+        tbody.innerHTML = '';
+        if(!dataLembur || dataLembur.length === 0) { msg.style.display = 'block'; return; }
+
+        // Filter data berdasarkan bulan dan tahun yang dipilih
+        const filtered = dataLembur.filter(item => {
+            if(!item.tanggal) return false;
+            const d = new Date(item.tanggal);
+            return (bln === 'all' || d.getMonth() == bln) && d.getFullYear() == thn;
+        });
+
+        if (filtered.length === 0) { msg.style.display = 'block'; return; }
+        msg.style.display = 'none';
+
+        filtered.forEach((item, index) => {
+            // Mencari indeks asli item ini di dalam array utama dataLembur agar sinkron dengan baris Google Sheets
+            const originalIndex = dataLembur.indexOf(item);
+            
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index+1}</td>
+                <td><b>${item.nama}</b></td>
+                <td>${item.pekerjaan}</td>
+                <td>${formatTanggal(item.tanggal)}</td>
+                <td>${item.jamMasuk}</td>
+                <td>${item.jamPulang}</td>
+                <td><b>${item.durasi}</b></td>
+                <td class="keterangan-cell">${item.keterangan || '-'}</td>
+                <td><button class="btn-hapus" onclick="hapusData(${originalIndex})">Hapus</button></td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function hapusData(indexOriginal) {
+        if(!confirm("Yakin ingin menghapus data lembur ini secara permanen dari server pusat?")) return;
+        
+        document.getElementById('adminLoading').innerText = "Sedang menghapus data di database pusat...";
+        document.getElementById('adminLoading').style.display = 'block';
+
+        fetch(`${SCRIPT_URL}?action=delete&rowIndex=${indexOriginal}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(res => {
+            if(res.status === "DELETED") {
+                alert("Data berhasil dihapus dari database pusat!");
+            } else {
+                alert("Gagal menghapus atau respon tidak dikenali.");
+            }
+            muatDataDariPusat();
+        })
+        .catch(e => {
+            alert("Gagal terhubung ke server untuk menghapus data: " + e);
+            document.getElementById('adminLoading').style.display = 'none';
+        });
+    }
+
+    function exportToCSV() {
+        const bln = document.getElementById('filterBulan').value;
+        const thn = document.getElementById('filterTahun').value;
+        const filtered = dataLembur.filter(item => {
+            if(!item.tanggal) return false;
+            const d = new Date(item.tanggal);
+            return (bln === 'all' || d.getMonth() == bln) && d.getFullYear() == thn;
+        });
+        if (filtered.length === 0) { alert("Tidak ada data untuk diunduh!"); return; }
+
+        let csv = "data:text/csv;charset=utf-8,\uFEFFNo,Nama,Pekerjaan,Tanggal,Masuk,Pulang,Durasi,Tugas\n";
+        filtered.forEach((item, index) => {
+            let ket = (item.keterangan || '-').replace(/"/g, '""').replace(/\n/g, ' ');
+            csv += `${index+1},"${item.nama}","${item.pekerjaan}",${formatTanggal(item.tanggal)},${item.jamMasuk},${item.jamPulang},"${item.durasi}","${ket}"\n`;
+        });
+        const link = document.createElement("a");
+        link.setAttribute("href", encodeURI(csv));
+        link.setAttribute("download", `Rekap_Lembur_Pusat.csv`);
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    }
 </script>
 </body>
 </html>
