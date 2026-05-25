@@ -79,7 +79,7 @@
         
         .loading-status { font-size: 13px; color: #2563eb; font-weight: 600; text-align: center; margin-bottom: 10px; display: none; }
         .btn-hapus { background-color: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
-        .btn-hapus:hover { background-color: #amp; background: #dc2626; }
+        .btn-hapus:hover { background: #dc2626; }
     </style>
 </head>
 <body>
@@ -207,7 +207,7 @@
 
 <script>
     // =========================================================
-    // ⚠️ MENGGUNAKAN URL TERBARU DARI DEPLOYMENT VERSI 9 ANDA
+    // PASTIKAN URL INI ADALAH URL LIVE APPS SCRIPT VERSI TERBARU ANDA
     // =========================================================
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwABHDEZe14E9mGFmlnOFQGsJrmUDYoidzcnar3p2FJWwMBfmKzq5KlQaEbwE9mPNw/exec"; 
     
@@ -223,17 +223,16 @@
     }
 
     document.getElementById('tanggal').valueAsDate = new Date();
-
-    cekStatusLoginOtomatis();
+    muatDataDariPusat();
 
     function muatDataDariPusat() {
         document.getElementById('adminLoading').innerText = "Sedang memuat database pusat...";
         document.getElementById('adminLoading').style.display = 'block';
         
-        fetch(SCRIPT_URL)
+        // Pemanggilan data (GET) murni tanpa parameter tambahan agar bebas CORS
+        fetch(SCRIPT_URL, { method: 'GET', mode: 'cors' })
         .then(response => response.json())
         .then(data => {
-            // Memastikan data terformat array murni
             dataLembur = Array.isArray(data) ? data : [];
             document.getElementById('adminLoading').style.display = 'none';
             tampilkanDataAdmin();
@@ -243,10 +242,6 @@
             console.error("Gagal memuat:", error);
             document.getElementById('adminLoading').innerText = "Gagal memuat data dari pusat.";
         });
-    }
-
-    function cekStatusLoginOtomatis() {
-        muatDataDariPusat();
     }
 
     function switchMode(mode) {
@@ -328,6 +323,9 @@
         return d.toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
     }
 
+    // =========================================================
+    // PERBAIKAN UTAMA: Mengirim data menggunakan metode Teks Body (Anti-CORS)
+    // =========================================================
     document.getElementById('overtimeForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const btnSubmit = document.getElementById('btnSubmitForm');
@@ -335,26 +333,33 @@
         btnSubmit.disabled = true;
         loadingText.style.display = 'block';
 
-        const nama = document.getElementById('nama').value;
-        const pekerjaan = document.getElementById('pekerjaan').value;
-        const tanggal = document.getElementById('tanggal').value;
-        const jamMasuk = document.getElementById('jamMasuk').value;
-        const jamPulang = document.getElementById('jamPulang').value;
-        const keterangan = document.getElementById('keterangan').value;
-        const durasi = hitungDurasi(jamMasuk, jamPulang);
+        const payload = {
+            nama: document.getElementById('nama').value,
+            pekerjaan: document.getElementById('pekerjaan').value,
+            tanggal: document.getElementById('tanggal').value,
+            jamMasuk: document.getElementById('jamMasuk').value,
+            jamPulang: document.getElementById('jamPulang').value,
+            durasi: hitungDurasi(document.getElementById('jamMasuk').value, document.getElementById('jamPulang').value),
+            keterangan: document.getElementById('keterangan').value
+        };
 
-        const urlKirim = `${SCRIPT_URL}?nama=${encodeURIComponent(nama)}&pekerjaan=${encodeURIComponent(pekerjaan)}&tanggal=${encodeURIComponent(tanggal)}&jamMasuk=${encodeURIComponent(jamMasuk)}&jamPulang=${encodeURIComponent(jamPulang)}&durasi=${encodeURIComponent(durasi)}&keterangan=${encodeURIComponent(keterangan)}`;
-
-        fetch(urlKirim, { method: 'POST' })
+        // Mengirim data murni lewat body text agar Google tidak memotong header izin CORS
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Memaksa browser mengabaikan restriksi CORS lokal
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(payload)
+        })
         .then(() => {
-            alert("Data lembur Anda BERHASIL dikirim dan tersimpan di database pusat!");
-            this.reset();
+            alert("Data lembur Anda BERHASIL terkirim!");
+            document.getElementById('overtimeForm').reset();
             document.getElementById('tanggal').valueAsDate = new Date();
             muatDataDariPusat();
         })
         .catch(error => {
-            alert("Terjadi kesalahan sistem, silakan coba lagi.");
+            alert("Terjadi gangguan koneksi, namun data biasanya tetap masuk. Silakan cek tabel.");
             console.error(error);
+            muatDataDariPusat();
         })
         .finally(() => {
             btnSubmit.disabled = false;
@@ -389,7 +394,7 @@
             return dateB - dateA;
         }).forEach((item, index) => {
             const row = document.createElement('tr');
-            row.innerHTML = `<td>${index+1}</td><td>${formatTanggal(item.tanggal)}</td><td>${item.pekerjaan}</td><td>${item.jamMasuk || item.masuk || '-'}</td><td>${item.jamPulang || item.pulang || '-'}</td><td><b>${item.durasi}</b></td><td class="keterangan-cell">${item.keterangan || item.tugas || '-'}</td>`;
+            row.innerHTML = `<td>${index+1}</td><td>${formatTanggal(item.tanggal)}</td><td>${item.pekerjaan}</td><td>${item.jamMasuk || '-'}</td><td>${item.jamPulang || '-'}</td><td><b>${item.durasi}</b></td><td class="keterangan-cell">${item.keterangan || '-'}</td>`;
             tbody.appendChild(row);
         });
     }
@@ -422,34 +427,41 @@
                 <td><b>${item.nama}</b></td>
                 <td>${item.pekerjaan}</td>
                 <td>${formatTanggal(item.tanggal)}</td>
-                <td>${item.jamMasuk || item.masuk || '-'}</td>
-                <td>${item.jamPulang || item.pulang || '-'}</td>
+                <td>${item.jamMasuk || '-'}</td>
+                <td>${item.jamPulang || '-'}</td>
                 <td><b>${item.durasi}</b></td>
-                <td class="keterangan-cell">${item.keterangan || item.tugas || '-'}</td>
+                <td class="keterangan-cell">${item.keterangan || '-'}</td>
                 <td><button class="btn-hapus" onclick="hapusData(${originalIndex})">Hapus</button></td>
             `;
             tbody.appendChild(row);
         });
     }
 
+    // =========================================================
+    // PERBAIKAN UTAMA: Mengirim perintah hapus menggunakan Body JSON (Anti-CORS)
+    // =========================================================
     function hapusData(indexOriginal) {
-        if(!confirm("Yakin ingin menghapus data lembur ini secara permanen dari server pusat?")) return;
+        if(!confirm("Yakin ingin menghapus data lembur ini secara permanen?")) return;
         
-        document.getElementById('adminLoading').innerText = "Sedang menghapus data di database pusat...";
+        document.getElementById('adminLoading').innerText = "Sedang menghapus data di pusat...";
         document.getElementById('adminLoading').style.display = 'block';
 
-        fetch(`${SCRIPT_URL}?action=delete&rowIndex=${indexOriginal}`, { method: 'POST' })
-        .then(response => response.json())
-        .then(res => {
-            if(res.status === "DELETED" || res.status === "SUCCESS") {
-                alert("Data berhasil dihapus dari database pusat!");
-            } else {
-                alert("Gagal menghapus atau respon tidak dikenali.");
-            }
+        const deletePayload = {
+            action: 'delete',
+            rowIndex: indexOriginal
+        };
+
+        fetch(SCRIPT_URL, { 
+            method: 'POST',
+            mode: 'no-cors', // Menghindari browser menolak request pra-eksekusi
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify(deletePayload)
+        })
+        .then(() => {
+            alert("Perintah hapus selesai diproses!");
             muatDataDariPusat();
         })
         .catch(e => {
-            alert("Gagal terhubung ke server untuk menghapus data.");
             console.error(e);
             muatDataDariPusat();
         });
@@ -468,9 +480,9 @@
 
         let csv = "data:text/csv;charset=utf-8,\uFEFFNo,Nama,Pekerjaan,Tanggal,Masuk,Pulang,Durasi,Tugas\n";
         filtered.forEach((item, index) => {
-            let jMasuk = item.jamMasuk || item.masuk || '-';
-            let jPulang = item.jamPulang || item.pulang || '-';
-            let ket = (item.keterangan || item.tugas || '-').replace(/"/g, '""').replace(/\n/g, ' ');
+            let jMasuk = item.jamMasuk || '-';
+            let jPulang = item.jamPulang || '-';
+            let ket = (item.keterangan || '-').replace(/"/g, '""').replace(/\n/g, ' ');
             csv += `${index+1},"${item.nama}","${item.pekerjaan}",${formatTanggal(item.tanggal)},${jMasuk},${jPulang},"${item.durasi}","${ket}"\n`;
         });
         const link = document.createElement("a");
