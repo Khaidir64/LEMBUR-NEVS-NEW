@@ -124,7 +124,7 @@
                     <input type="time" id="jamPulang" required>
                 </div>
                 <div class="form-group">
-                    <label pour="keterangan">Keterangan Lembur / Tugas</label>
+                    <label for="keterangan">Keterangan Lembur / Tugas</label>
                     <textarea id="keterangan" placeholder="Contoh: Menyelesaikan cetak jersey atau maintenance" required></textarea>
                 </div>
                 <button type="submit" id="btnSubmitForm" class="btn-submit">Kirim Data Lembur</button>
@@ -206,7 +206,7 @@
 </div>
 
 <script>
-    // URL SCRIPT TERBARU MILIK ANDA (Pastikan diupdate jika berubah alamat deploy-nya)
+    // URL DEPLOYMENT SCRIPT TERBARU ANDA
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwABHDEZe14E9mGFmlnOFQGsJrmUDYoidzcnar3p2FJWwMBfmKzq5KlQaEbwE9mPNw/exec"; 
     
     let dataLembur = [];
@@ -442,9 +442,10 @@
             let jPulang = item.jamPulang || item.pulang || '-';
             let tugas = item.keterangan || item.tugas || '-';
             
-            // Ambil parameter teks untuk proses pencarian baris hapus yang aman
-            const namaAman = (item.nama || "").replace(/"/g, '\\"');
-            const tanggalAman = (item.tanggal || "").replace(/"/g, '\\"');
+            // Mengamankan petik ganda teks string parameter onclick
+            const namaAman = (item.nama || "").replace(/'/g, "\\'");
+            const tanggalAman = (item.tanggal || "").replace(/'/g, "\\'");
+            const jamMasukAman = (jMasuk).replace(/'/g, "\\'");
 
             const row = document.createElement('tr');
             row.innerHTML = `
@@ -456,14 +457,13 @@
                 <td>${jPulang}</td>
                 <td><b>${item.durasi || '-'}</b></td>
                 <td class="keterangan-cell">${tugas}</td>
-                <td><button class="btn-hapus" onclick="hapusData('${namaAman}', '${tanggalAman}')">Hapus</button></td>
+                <td><button class="btn-hapus" onclick="hapusData('${namaAman}', '${tanggalAman}', '${jamMasukAman}')">Hapus</button></td>
             `;
             tbody.appendChild(row);
         });
     }
 
-    // FIX: Mengirim parameter nama dan tanggal spesifik agar pencarian di Apps Script akurat dan aman
-    function hapusData(namaKaryawan, tanggalLembur) {
+    function hapusData(namaKaryawan, tanggalLembur, jamMasukLembur) {
         if(!confirm("Yakin ingin menghapus data lembur milik " + namaKaryawan + " secara permanen?")) return;
         
         document.getElementById('adminLoading').innerText = "Sedang menghapus data di pusat...";
@@ -473,6 +473,7 @@
         deletePayload.append('action', 'delete');
         deletePayload.append('nama', namaKaryawan);
         deletePayload.append('tanggal', tanggalLembur);
+        deletePayload.append('jamMasuk', jamMasukLembur);
 
         fetch(SCRIPT_URL, { 
             method: 'POST',
