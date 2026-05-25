@@ -79,7 +79,7 @@
         
         .loading-status { font-size: 13px; color: #2563eb; font-weight: 600; text-align: center; margin-bottom: 10px; display: none; }
         .btn-hapus { background-color: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; }
-        .btn-hapus:hover { background-color: #dc2626; }
+        .btn-hapus:hover { background-color: #amp; background: #dc2626; }
     </style>
 </head>
 <body>
@@ -109,7 +109,7 @@
                 </div>
                 <div class="form-group">
                     <label for="pekerjaan">Pekerjaan / Bagian</label>
-                    <input type="text" id="pekerjaan" placeholder="Contoh: Produksi / Desain" required>
+                    <input type="text" id="pekerjaan" placeholder="Contoh: Production / Desain" required>
                 </div>
                 <div class="form-group">
                     <label for="tanggal">Tanggal Lembur</label>
@@ -206,10 +206,10 @@
 </div>
 
 <script>
-    // ==========================================
-    // ⚠️ LINK UTAMA JEMBATAN GOOGLE SHEETS ANDA
-    // ==========================================
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysph4WjhzsJr6Zyurwe-tuUKUTpM1S-mnJClgQArmSe9-s-HjLpF8mbIdm0KU_O4I/exec"; 
+    // =========================================================
+    // ⚠️ MENGGUNAKAN URL TERBARU DARI DEPLOYMENT VERSI 9 ANDA
+    // =========================================================
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVXBXTfCQckG_GxslJsjvM9VxNX473R0zzMStV2FzUVFg18gmzlXaS1ajRt-sWin_u/exec"; 
     
     let dataLembur = [];
     const PASSWORD_ADMIN = "Galaxy88"; 
@@ -233,7 +233,8 @@
         fetch(SCRIPT_URL)
         .then(response => response.json())
         .then(data => {
-            dataLembur = data;
+            // Memastikan data terformat array murni
+            dataLembur = Array.isArray(data) ? data : [];
             document.getElementById('adminLoading').style.display = 'none';
             tampilkanDataAdmin();
             tampilkanRiwayatKaryawan();
@@ -304,13 +305,16 @@
         return `${Math.floor(selisih / 60)} Jam ${selisih % 60} Menit`;
     }
 
-    // 🌟 PENYEMPURNAAN: Fungsi parsing tanggal agar aman membaca teks format Indonesia / ISO
     function parseTanggalBawaan(str) {
         if (!str) return null;
-        // Jika format Indonesia seperti 21/05/2026
         if (str.includes('/')) {
             const parts = str.split('/');
+            if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]);
+        }
+        if (str.includes('-')) {
+            const parts = str.split('-');
             if (parts.length === 3) {
+                if (parts[0].length === 4) return new Date(parts[0], parts[1] - 1, parts[2]);
                 return new Date(parts[2], parts[1] - 1, parts[0]);
             }
         }
@@ -320,7 +324,7 @@
     function formatTanggal(str) {
         if(!str) return "-";
         const d = parseTanggalBawaan(str);
-        if(!d || isNaN(d.getTime())) return str; // Jika gagal kembalikan string asli
+        if(!d || isNaN(d.getTime())) return str;
         return d.toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
     }
 
@@ -342,7 +346,7 @@
         const urlKirim = `${SCRIPT_URL}?nama=${encodeURIComponent(nama)}&pekerjaan=${encodeURIComponent(pekerjaan)}&tanggal=${encodeURIComponent(tanggal)}&jamMasuk=${encodeURIComponent(jamMasuk)}&jamPulang=${encodeURIComponent(jamPulang)}&durasi=${encodeURIComponent(durasi)}&keterangan=${encodeURIComponent(keterangan)}`;
 
         fetch(urlKirim, { method: 'POST' })
-        .then(response => {
+        .then(() => {
             alert("Data lembur Anda BERHASIL dikirim dan tersimpan di database pusat!");
             this.reset();
             document.getElementById('tanggal').valueAsDate = new Date();
@@ -385,7 +389,7 @@
             return dateB - dateA;
         }).forEach((item, index) => {
             const row = document.createElement('tr');
-            row.innerHTML = `<td>${index+1}</td><td>${formatTanggal(item.tanggal)}</td><td>${item.pekerjaan}</td><td>${item.jamMasuk}</td><td>${item.jamPulang}</td><td><b>${item.durasi}</b></td><td class="keterangan-cell">${item.keterangan || '-'}</td>`;
+            row.innerHTML = `<td>${index+1}</td><td>${formatTanggal(item.tanggal)}</td><td>${item.pekerjaan}</td><td>${item.jamMasuk || item.masuk || '-'}</td><td>${item.jamPulang || item.pulang || '-'}</td><td><b>${item.durasi}</b></td><td class="keterangan-cell">${item.keterangan || item.tugas || '-'}</td>`;
             tbody.appendChild(row);
         });
     }
@@ -399,11 +403,10 @@
         tbody.innerHTML = '';
         if(!dataLembur || dataLembur.length === 0) { msg.style.display = 'block'; return; }
 
-        // 🌟 PERBAIKAN: Filter menggunakan sistem parse tanggal baru
         const filtered = dataLembur.filter(item => {
             if(!item.tanggal) return false;
             const d = parseTanggalBawaan(item.tanggal);
-            if(!d || isNaN(d.getTime())) return true; // Loloskan jika format teks murni
+            if(!d || isNaN(d.getTime())) return true; 
             return (bln === 'all' || d.getMonth() == bln) && d.getFullYear() == thn;
         });
 
@@ -419,10 +422,10 @@
                 <td><b>${item.nama}</b></td>
                 <td>${item.pekerjaan}</td>
                 <td>${formatTanggal(item.tanggal)}</td>
-                <td>${item.jamMasuk}</td>
-                <td>${item.jamPulang}</td>
+                <td>${item.jamMasuk || item.masuk || '-'}</td>
+                <td>${item.jamPulang || item.pulang || '-'}</td>
                 <td><b>${item.durasi}</b></td>
-                <td class="keterangan-cell">${item.keterangan || '-'}</td>
+                <td class="keterangan-cell">${item.keterangan || item.tugas || '-'}</td>
                 <td><button class="btn-hapus" onclick="hapusData(${originalIndex})">Hapus</button></td>
             `;
             tbody.appendChild(row);
@@ -438,7 +441,7 @@
         fetch(`${SCRIPT_URL}?action=delete&rowIndex=${indexOriginal}`, { method: 'POST' })
         .then(response => response.json())
         .then(res => {
-            if(res.status === "DELETED") {
+            if(res.status === "DELETED" || res.status === "SUCCESS") {
                 alert("Data berhasil dihapus dari database pusat!");
             } else {
                 alert("Gagal menghapus atau respon tidak dikenali.");
@@ -446,8 +449,9 @@
             muatDataDariPusat();
         })
         .catch(e => {
-            alert("Gagal terhubung ke server untuk menghapus data: " + e);
-            document.getElementById('adminLoading').style.display = 'none';
+            alert("Gagal terhubung ke server untuk menghapus data.");
+            console.error(e);
+            muatDataDariPusat();
         });
     }
 
@@ -464,8 +468,10 @@
 
         let csv = "data:text/csv;charset=utf-8,\uFEFFNo,Nama,Pekerjaan,Tanggal,Masuk,Pulang,Durasi,Tugas\n";
         filtered.forEach((item, index) => {
-            let ket = (item.keterangan || '-').replace(/"/g, '""').replace(/\n/g, ' ');
-            csv += `${index+1},"${item.nama}","${item.pekerjaan}",${formatTanggal(item.tanggal)},${item.jamMasuk},${item.jamPulang},"${item.durasi}","${ket}"\n`;
+            let jMasuk = item.jamMasuk || item.masuk || '-';
+            let jPulang = item.jamPulang || item.pulang || '-';
+            let ket = (item.keterangan || item.tugas || '-').replace(/"/g, '""').replace(/\n/g, ' ');
+            csv += `${index+1},"${item.nama}","${item.pekerjaan}",${formatTanggal(item.tanggal)},${jMasuk},${jPulang},"${item.durasi}","${ket}"\n`;
         });
         const link = document.createElement("a");
         link.setAttribute("href", encodeURI(csv));
