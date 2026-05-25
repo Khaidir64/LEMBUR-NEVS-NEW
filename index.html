@@ -10,13 +10,9 @@
             --primary-hover: #1d4ed8;
             --admin-color: #7c3aed;
             --admin-hover: #6d28d9;
-            --card-bg: rgba(255, 255, 255, 0.95); /* Sedikit transparan (95%) agar teks di dalam kotak tetap mudah dibaca */
+            --card-bg: rgba(255, 255, 255, 0.95); 
             --text-color: #1e293b;
             --border-color: #e2e8f0;
-            
-            /* GANTI NAMA FILE DI BAWAH INI SUSAH DENGAN GAMBAR KAMU 
-               Contoh jika sudah diupload ke GitHub: url('background.jpg') atau url('BG_NEVS.png')
-            */
             --bg-image: url('background.jpg'); 
         }
 
@@ -24,11 +20,11 @@
         
         body { 
             background-image: var(--bg-image);
-            background-size: cover;             /* Membuat gambar menutupi seluruh layar browser */
-            background-position: center;        /* Posisi gambar selalu di tengah */
-            background-repeat: no-repeat;       /* Gambar tidak mengulang-ulang (pecah) */
-            background-attachment: fixed;       /* Gambar tetap diam saat form di-scroll ke bawah */
-            background-color: #f8fafc;          /* Warna cadangan jika gambar gagal dimuat */
+            background-size: cover;             
+            background-position: center;        
+            background-repeat: no-repeat;       
+            background-attachment: fixed;       
+            background-color: #f8fafc;          
             color: var(--text-color); 
             padding: 10px; 
             display: flex; 
@@ -231,8 +227,9 @@
     cekStatusLoginOtomatis();
 
     function muatDataDariPusat() {
-        if(SCRIPT_URL === "PASTE_URL_WEB_APP_KAMU_DISINI") return;
+        document.getElementById('adminLoading').innerText = "Sedang memuat database pusat...";
         document.getElementById('adminLoading').style.display = 'block';
+        
         fetch(SCRIPT_URL)
         .then(response => response.json())
         .then(data => {
@@ -243,15 +240,12 @@
         })
         .catch(error => {
             console.error("Gagal memuat:", error);
+            document.getElementById('adminLoading').innerText = "Gagal memuat data dari pusat.";
         });
     }
 
     function cekStatusLoginOtomatis() {
-        if (sessionStorage.getItem('adminLoggedIn') === 'true') {
-            muatDataDariPusat();
-        } else {
-            muatDataDariPusat();
-        }
+        muatDataDariPusat();
     }
 
     function switchMode(mode) {
@@ -310,9 +304,24 @@
         return `${Math.floor(selisih / 60)} Jam ${selisih % 60} Menit`;
     }
 
+    // 🌟 PENYEMPURNAAN: Fungsi parsing tanggal agar aman membaca teks format Indonesia / ISO
+    function parseTanggalBawaan(str) {
+        if (!str) return null;
+        // Jika format Indonesia seperti 21/05/2026
+        if (str.includes('/')) {
+            const parts = str.split('/');
+            if (parts.length === 3) {
+                return new Date(parts[2], parts[1] - 1, parts[0]);
+            }
+        }
+        return new Date(str);
+    }
+
     function formatTanggal(str) {
         if(!str) return "-";
-        return new Date(str).toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
+        const d = parseTanggalBawaan(str);
+        if(!d || isNaN(d.getTime())) return str; // Jika gagal kembalikan string asli
+        return d.toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
     }
 
     document.getElementById('overtimeForm').addEventListener('submit', function(e) {
@@ -369,7 +378,12 @@
         }
 
         msg.style.display = 'none';
-        filtered.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).forEach((item, index) => {
+        
+        filtered.sort((a, b) => {
+            const dateA = parseTanggalBawaan(a.tanggal) || new Date(0);
+            const dateB = parseTanggalBawaan(b.tanggal) || new Date(0);
+            return dateB - dateA;
+        }).forEach((item, index) => {
             const row = document.createElement('tr');
             row.innerHTML = `<td>${index+1}</td><td>${formatTanggal(item.tanggal)}</td><td>${item.pekerjaan}</td><td>${item.jamMasuk}</td><td>${item.jamPulang}</td><td><b>${item.durasi}</b></td><td class="keterangan-cell">${item.keterangan || '-'}</td>`;
             tbody.appendChild(row);
@@ -385,10 +399,11 @@
         tbody.innerHTML = '';
         if(!dataLembur || dataLembur.length === 0) { msg.style.display = 'block'; return; }
 
-        // Filter data berdasarkan bulan dan tahun yang dipilih
+        // 🌟 PERBAIKAN: Filter menggunakan sistem parse tanggal baru
         const filtered = dataLembur.filter(item => {
             if(!item.tanggal) return false;
-            const d = new Date(item.tanggal);
+            const d = parseTanggalBawaan(item.tanggal);
+            if(!d || isNaN(d.getTime())) return true; // Loloskan jika format teks murni
             return (bln === 'all' || d.getMonth() == bln) && d.getFullYear() == thn;
         });
 
@@ -396,7 +411,6 @@
         msg.style.display = 'none';
 
         filtered.forEach((item, index) => {
-            // Mencari indeks asli item ini di dalam array utama dataLembur agar sinkron dengan baris Google Sheets
             const originalIndex = dataLembur.indexOf(item);
             
             const row = document.createElement('tr');
@@ -442,7 +456,8 @@
         const thn = document.getElementById('filterTahun').value;
         const filtered = dataLembur.filter(item => {
             if(!item.tanggal) return false;
-            const d = new Date(item.tanggal);
+            const d = parseTanggalBawaan(item.tanggal);
+            if(!d || isNaN(d.getTime())) return true;
             return (bln === 'all' || d.getMonth() == bln) && d.getFullYear() == thn;
         });
         if (filtered.length === 0) { alert("Tidak ada data untuk diunduh!"); return; }
