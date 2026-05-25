@@ -278,19 +278,26 @@
         }
     }
 
-    // AMAN: Proteksi anti-crash jika nilai jam masuk/pulang kosong saat di-split
+    // FIX LOGIKA: Fleksibel mengalkulasi durasi dan anti-mogok saat memuat data riwayat
     function hitungDurasi(masuk, pulang) {
-        if (!masuk || !pulang) return "-";
+        if (!masuk || !pulang || masuk === '-' || pulang === '-') return "-";
         try {
-            let [jamM, minM] = masuk.split(':').map(Number);
-            let [jamP, minP] = pulang.split(':').map(Number);
-            if (isNaN(jamM) || isNaN(jamP)) return "-";
+            let partsM = masuk.toString().split(':');
+            let partsP = pulang.toString().split(':');
+            if (partsM.length < 2 || partsP.length < 2) return "-";
+            
+            let jamM = parseInt(partsM[0], 10);
+            let minM = parseInt(partsM[1], 10);
+            let jamP = parseInt(partsP[0], 10);
+            let minP = parseInt(partsP[1], 10);
+            
+            if (isNaN(jamM) || isNaN(jamP) || isNaN(minM) || isNaN(minP)) return "-";
             
             let totalM = (jamM * 60) + minM;
             let totalP = (jamP * 60) + minP;
             if (totalP < totalM) { totalP += 24 * 60; }
             let selisih = totalP - totalM;
-            return `${Math.floor(selisih / 60)} Jam ${selisih % 60} Menit`;
+            return Math.floor(selisih / 60) + " Jam " + (selisih % 60) + " Menit";
         } catch (err) {
             return "-";
         }
@@ -317,6 +324,17 @@
         const d = parseTanggalBawaan(str);
         if(!d || isNaN(d.getTime())) return str;
         return d.toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
+    }
+
+    function bukaPanelAdmin(container, btnAdmin, btnUser, userSection, adminSection, mainTitle, subTitle) {
+        container.classList.add('admin-mode');
+        btnAdmin.classList.add('active-admin');
+        btnUser.classList.remove('active-user');
+        userSection.classList.remove('active');
+        adminSection.classList.add('active');
+        mainTitle.innerText = "Panel Kontrol Admin";
+        subTitle.innerText = "Manajemen data real-time terhubung langsung ke Google Sheets";
+        tampilkanDataAdmin();
     }
 
     document.getElementById('overtimeForm').addEventListener('submit', function(e) {
@@ -359,7 +377,7 @@
         })
         .catch(error => {
             console.error(error);
-            alert("Data berhasil diproses! Silakan periksa daftar tabel di bawah.");
+            alert("Data berhasil diproses! Silakan periksa riwayat.");
             muatDataDariPusat();
         })
         .finally(() => {
@@ -395,7 +413,7 @@
             return dateB - dateA;
         }).forEach((item, index) => {
             const row = document.createElement('tr');
-            row.innerHTML = `<td>${index+1}</td><td>${formatTanggal(item.tanggal)}</td><td>${item.pekerjaan}</td><td>${item.jamMasuk || '-'}</td><td>${item.jamPulang || '-'}</td><td><b>${item.durasi}</b></td><td class="keterangan-cell">${item.keterangan || '-'}</td>`;
+            row.innerHTML = `<td>${index+1}</td><td>${formatTanggal(item.tanggal)}</td><td>${item.pekerjaan}</td><td>${item.jamMasuk || '-'}</td><td>${item.jamPulang || '-'}</td><td><b>${item.durasi || '-'}</b></td><td class="keterangan-cell">${item.keterangan || '-'}</td>`;
             tbody.appendChild(row);
         });
     }
@@ -430,7 +448,7 @@
                 <td>${formatTanggal(item.tanggal)}</td>
                 <td>${item.jamMasuk || '-'}</td>
                 <td>${item.jamPulang || '-'}</td>
-                <td><b>${item.durasi}</b></td>
+                <td><b>${item.durasi || '-'}</b></td>
                 <td class="keterangan-cell">${item.keterangan || '-'}</td>
                 <td><button class="btn-hapus" onclick="hapusData(${originalIndex})">Hapus</button></td>
             `;
@@ -481,7 +499,7 @@
             let jMasuk = item.jamMasuk || '-';
             let jPulang = item.jamPulang || '-';
             let ket = (item.keterangan || '-').replace(/"/g, '""').replace(/\n/g, ' ');
-            csv += `${index+1},"${item.nama}","${item.pekerjaan}",${formatTanggal(item.tanggal)},${jMasuk},${jPulang},"${item.durasi}","${ket}"\n`;
+            csv += `${index+1},"${item.nama}","${item.pekerjaan}",${formatTanggal(item.tanggal)},${jMasuk},${jPulang},"${item.durasi || '-'}","${ket}"\n`;
         });
         const link = document.createElement("a");
         link.setAttribute("href", encodeURI(csv));
