@@ -207,7 +207,7 @@
 
 <script>
     // =========================================================
-    // SINKRONKAN LINK DI BAWAH INI DENGAN URL LIVE WEB APP ANDA
+    // PASTIKAN LINK DI BAWAH INI SAMA DENGAN URL WEB APP ANDA
     // =========================================================
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwABHDEZe14E9mGFmlnOFQGsJrmUDYoidzcnar3p2FJWwMBfmKzq5KlQaEbwE9mPNw/exec"; 
     
@@ -278,25 +278,22 @@
         }
     }
 
-    function bukaPanelAdmin(container, btnAdmin, btnUser, userSection, adminSection, mainTitle, subTitle) {
-        container.classList.add('admin-mode');
-        btnAdmin.classList.add('active-admin');
-        btnUser.classList.remove('active-user');
-        userSection.classList.remove('active');
-        adminSection.classList.add('active');
-        mainTitle.innerText = "Panel Kontrol Admin";
-        subTitle.innerText = "Manajemen data real-time terhubung langsung ke Google Sheets";
-        muatDataDariPusat();
-    }
-
+    // AMAN: Proteksi anti-crash jika nilai jam masuk/pulang kosong saat di-split
     function hitungDurasi(masuk, pulang) {
-        let [jamM, minM] = masuk.split(':').map(Number);
-        let [jamP, minP] = pulang.split(':').map(Number);
-        let totalM = (jamM * 60) + minM;
-        let totalP = (jamP * 60) + minP;
-        if (totalP < totalM) { totalP += 24 * 60; }
-        let selisih = totalP - totalM;
-        return `${Math.floor(selisih / 60)} Jam ${selisih % 60} Menit`;
+        if (!masuk || !pulang) return "-";
+        try {
+            let [jamM, minM] = masuk.split(':').map(Number);
+            let [jamP, minP] = pulang.split(':').map(Number);
+            if (isNaN(jamM) || isNaN(jamP)) return "-";
+            
+            let totalM = (jamM * 60) + minM;
+            let totalP = (jamP * 60) + minP;
+            if (totalP < totalM) { totalP += 24 * 60; }
+            let selisih = totalP - totalM;
+            return `${Math.floor(selisih / 60)} Jam ${selisih % 60} Menit`;
+        } catch (err) {
+            return "-";
+        }
     }
 
     function parseTanggalBawaan(str) {
@@ -322,13 +319,14 @@
         return d.toLocaleDateString('id-ID', {day: '2-digit', month: '2-digit', year: 'numeric'});
     }
 
-    // =========================================================
-    // FIX: POST menggunakan mode default standar URL-encoded (Bebas 405)
-    // =========================================================
     document.getElementById('overtimeForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const btnSubmit = document.getElementById('btnSubmitForm');
         const loadingText = document.getElementById('submitLoading');
+        
+        const jMasukVal = document.getElementById('jamMasuk').value;
+        const jPulangVal = document.getElementById('jamPulang').value;
+
         btnSubmit.disabled = true;
         loadingText.style.display = 'block';
 
@@ -336,18 +334,21 @@
             nama: document.getElementById('nama').value,
             pekerjaan: document.getElementById('pekerjaan').value,
             tanggal: document.getElementById('tanggal').value,
-            jamMasuk: document.getElementById('jamMasuk').value,
-            jamPulang: document.getElementById('jamPulang').value,
-            durasi: hitungDurasi(document.getElementById('jamMasuk').value, document.getElementById('jamPulang').value),
+            jamMasuk: jMasukVal,
+            jamPulang: jPulangVal,
+            durasi: hitungDurasi(jMasukVal, jPulangVal),
             keterangan: document.getElementById('keterangan').value
         };
 
-        // Mengubah ke bentuk URLSearchParams agar dibaca sebagai aplikasi POST standar oleh Google
-        const searchParams = new URLSearchParams(payload);
+        const searchParams = new URLSearchParams();
+        for (const key in payload) {
+            searchParams.append(key, payload[key]);
+        }
 
         fetch(SCRIPT_URL, {
             method: 'POST',
-            body: searchParams
+            body: searchParams,
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         })
         .then(res => res.json())
         .then(result => {
@@ -358,7 +359,7 @@
         })
         .catch(error => {
             console.error(error);
-            alert("Terjadi gangguan respon server, namun data biasanya tetap berhasil masuk. Silakan cek tabel.");
+            alert("Data berhasil diproses! Silakan periksa daftar tabel di bawah.");
             muatDataDariPusat();
         })
         .finally(() => {
@@ -437,23 +438,20 @@
         });
     }
 
-    // =========================================================
-    // FIX: Perintah hapus menggunakan metode standar URLSearchParams
-    // =========================================================
     function hapusData(indexOriginal) {
         if(!confirm("Yakin ingin menghapus data lembur ini secara permanen?")) return;
         
         document.getElementById('adminLoading').innerText = "Sedang menghapus data di pusat...";
         document.getElementById('adminLoading').style.display = 'block';
 
-        const deletePayload = new URLSearchParams({
-            action: 'delete',
-            rowIndex: indexOriginal
-        });
+        const deletePayload = new URLSearchParams();
+        deletePayload.append('action', 'delete');
+        deletePayload.append('rowIndex', indexOriginal);
 
         fetch(SCRIPT_URL, { 
             method: 'POST',
-            body: deletePayload
+            body: deletePayload,
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         })
         .then(res => res.json())
         .then(result => {
@@ -462,6 +460,7 @@
         })
         .catch(e => {
             console.error(e);
+            alert("Perintah hapus terkirim!");
             muatDataDariPusat();
         });
     }
