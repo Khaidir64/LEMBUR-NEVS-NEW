@@ -207,7 +207,7 @@
 
 <script>
     // =========================================================
-    // PASTIKAN URL INI ADALAH URL LIVE APPS SCRIPT VERSI TERBARU ANDA
+    // SINKRONKAN LINK DI BAWAH INI DENGAN URL LIVE WEB APP ANDA
     // =========================================================
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwABHDEZe14E9mGFmlnOFQGsJrmUDYoidzcnar3p2FJWwMBfmKzq5KlQaEbwE9mPNw/exec"; 
     
@@ -229,8 +229,7 @@
         document.getElementById('adminLoading').innerText = "Sedang memuat database pusat...";
         document.getElementById('adminLoading').style.display = 'block';
         
-        // Pemanggilan data (GET) murni tanpa parameter tambahan agar bebas CORS
-        fetch(SCRIPT_URL, { method: 'GET', mode: 'cors' })
+        fetch(SCRIPT_URL, { method: 'GET' })
         .then(response => response.json())
         .then(data => {
             dataLembur = Array.isArray(data) ? data : [];
@@ -324,7 +323,7 @@
     }
 
     // =========================================================
-    // PERBAIKAN UTAMA: Mengirim data menggunakan metode Teks Body (Anti-CORS)
+    // FIX: POST menggunakan mode default standar URL-encoded (Bebas 405)
     // =========================================================
     document.getElementById('overtimeForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -343,22 +342,23 @@
             keterangan: document.getElementById('keterangan').value
         };
 
-        // Mengirim data murni lewat body text agar Google tidak memotong header izin CORS
+        // Mengubah ke bentuk URLSearchParams agar dibaca sebagai aplikasi POST standar oleh Google
+        const searchParams = new URLSearchParams(payload);
+
         fetch(SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors', // Memaksa browser mengabaikan restriksi CORS lokal
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify(payload)
+            body: searchParams
         })
-        .then(() => {
-            alert("Data lembur Anda BERHASIL terkirim!");
+        .then(res => res.json())
+        .then(result => {
+            alert("Data lembur Anda BERHASIL terkirim ke Google Sheets!");
             document.getElementById('overtimeForm').reset();
             document.getElementById('tanggal').valueAsDate = new Date();
             muatDataDariPusat();
         })
         .catch(error => {
-            alert("Terjadi gangguan koneksi, namun data biasanya tetap masuk. Silakan cek tabel.");
             console.error(error);
+            alert("Terjadi gangguan respon server, namun data biasanya tetap berhasil masuk. Silakan cek tabel.");
             muatDataDariPusat();
         })
         .finally(() => {
@@ -438,7 +438,7 @@
     }
 
     // =========================================================
-    // PERBAIKAN UTAMA: Mengirim perintah hapus menggunakan Body JSON (Anti-CORS)
+    // FIX: Perintah hapus menggunakan metode standar URLSearchParams
     // =========================================================
     function hapusData(indexOriginal) {
         if(!confirm("Yakin ingin menghapus data lembur ini secara permanen?")) return;
@@ -446,19 +446,18 @@
         document.getElementById('adminLoading').innerText = "Sedang menghapus data di pusat...";
         document.getElementById('adminLoading').style.display = 'block';
 
-        const deletePayload = {
+        const deletePayload = new URLSearchParams({
             action: 'delete',
             rowIndex: indexOriginal
-        };
+        });
 
         fetch(SCRIPT_URL, { 
             method: 'POST',
-            mode: 'no-cors', // Menghindari browser menolak request pra-eksekusi
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify(deletePayload)
+            body: deletePayload
         })
-        .then(() => {
-            alert("Perintah hapus selesai diproses!");
+        .then(res => res.json())
+        .then(result => {
+            alert("Data berhasil terhapus dari server pusat!");
             muatDataDariPusat();
         })
         .catch(e => {
